@@ -25,6 +25,24 @@ class GeminiNanoService {
     }
   }
 
+  Future<String> summarize(String input) async {
+    // Vérifier si nous sommes sur Android
+    if (Platform.isAndroid) {
+      try {
+        final String result = await _channel.invokeMethod('summarize', input);
+        return result;
+      } catch (e, s) {
+        // En cas d'erreur avec le code natif, retourner le message d'indisponibilité
+        debugPrint(e.toString());
+        debugPrint(s.toString());
+        return "Je ne suis pas disponible sur ce device";
+      }
+    } else {
+      // iOS, Web ou autres plateformes
+      return "Je ne suis pas disponible sur ce device";
+    }
+  }
+
 
   Future<String> generateResponseWithImage(File input) async {
     // Vérifier si nous sommes sur Android

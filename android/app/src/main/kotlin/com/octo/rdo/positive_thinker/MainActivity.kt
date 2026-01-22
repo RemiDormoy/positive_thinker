@@ -14,17 +14,21 @@ import com.google.mlkit.genai.imagedescription.ImageDescription
 import com.google.mlkit.genai.imagedescription.ImageDescriptionRequest
 import com.google.mlkit.genai.prompt.Generation
 import com.google.mlkit.genai.prompt.GenerativeModel
+import com.google.mlkit.genai.summarization.Summarization
+import com.google.mlkit.genai.summarization.SummarizationRequest
+import com.google.mlkit.genai.summarization.Summarizer
+import com.google.mlkit.genai.summarization.SummarizerOptions
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
-import java.io.File
 
 class MainActivity : FlutterActivity() {
     private lateinit var generativeModel: GenerativeModel
     private lateinit var imageDescriber: ImageDescriber
+    private lateinit var summarizer: Summarizer
     private var modelDownloaded: Boolean = false
     private val CHANNEL = "gemini_nano_service"
 
@@ -52,6 +56,9 @@ class MainActivity : FlutterActivity() {
             } else if (call.method == "prompt") {
                 val promptString = call.arguments<String>()
                 generateContent(promptString!!, result)
+            } else if (call.method == "summarize") {
+                val promptString = call.arguments<String>()
+                summarizeContent(promptString!!, result)
             } else if (call.method == "imageDescription") {
                 val filePath = call.arguments<String>()
                 describeImage(filePath!!, result)
@@ -69,6 +76,9 @@ class MainActivity : FlutterActivity() {
         if (::imageDescriber.isInitialized) {
             imageDescriber.close()
         }
+        if (::summarizer.isInitialized) {
+            summarizer.close()
+        }
     }
 
     private fun generateContent(request: String, result: MethodChannel.Result) {
@@ -82,6 +92,26 @@ class MainActivity : FlutterActivity() {
             }
         }
     }
+
+    private fun summarizeContent(
+        promptString: String,
+        result: MethodChannel.Result
+    ) {
+        lifecycleScope.future {
+            try {
+                val summarizerOptions = SummarizerOptions.builder(context)
+                    .setInputType(SummarizerOptions.InputType.ARTICLE)
+                    .setOutputType(SummarizerOptions.OutputType.THREE_BULLETS)
+                    .setLanguage(SummarizerOptions.Language.ENGLISH)
+                    .build()
+                summarizer = Summarization.getClient(summarizerOptions)
+                prepareAndStartSummarization(summarizer, promptString, result)
+            } catch (e: Exception) {
+                result.error("GENERATION_ERROR", e.message ?: "Failed to generate content", null)
+            }
+        }
+    }
+
 
     private fun describeImage(filePath: String, result: MethodChannel.Result) {
         lifecycleScope.future {
@@ -151,7 +181,8 @@ class MainActivity : FlutterActivity() {
 
 
         // Run inference with a streaming callback
-        val imageDescription = imageDescriber.runInference(imageDescriptionRequest).await().description
+        val imageDescription =
+            imageDescriber.runInference(imageDescriptionRequest).await().description
         result.success(imageDescription)
     }
 
@@ -198,4 +229,48 @@ class MainActivity : FlutterActivity() {
         }
 
     }
+}
+
+suspend fun prepareAndStartSummarization(
+    summarizer: Summarizer,
+    articleToSummarize: String,
+    result: MethodChannel.Result
+) {
+    // Check feature availability. Status will be one of the following:
+    // UNAVAILABLE, DOWNLOADABLE, DOWNLOADING, AVAILABLE
+    val featureStatus = summarizer.checkFeatureStatus().await()
+
+    if (featureStatus == FeatureStatus.DOWNLOADABLE) {
+        // Download feature if necessary. If downloadFeature is not called,
+        // the first inference request will also trigger the feature to be
+        // downloaded if it's not already downloaded.
+        summarizer.downloadFeature(object : DownloadCallback {
+            override fun onDownloadStarted(bytesToDownload: Long) {}
+
+            override fun onDownloadFailed(e: GenAiException) {}
+
+            override fun onDownloadProgress(totalBytesDownloaded: Long) {}
+
+            override fun onDownloadCompleted() {
+                startSummarizationRequest(articleToSummarize, summarizer, result)
+            }
+        })
+    } else if (featureStatus == FeatureStatus.DOWNLOADING) {
+        // Inference request will automatically run once feature is
+        // downloaded. If Gemini Nano is already downloaded on the device,
+        // the feature-specific LoRA adapter model will be downloaded
+        // quickly. However, if Gemini Nano is not already downloaded, the
+        // download process may take longer.
+        startSummarizationRequest(articleToSummarize, summarizer, result)
+    } else if (featureStatus == FeatureStatus.AVAILABLE) {
+        startSummarizationRequest(articleToSummarize, summarizer, result)
+    }
+}
+
+fun startSummarizationRequest(text: String, summarizer: Summarizer, result: MethodChannel.Result) {
+    // Create task request
+    val summarizationRequest = SummarizationRequest.builder(text).build()
+
+    val summarizationResult = summarizer.runInference(summarizationRequest).get().summary
+    result.success(summarizationResult)
 }
