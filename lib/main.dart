@@ -1,0 +1,192 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Pensée Positive',
+      theme: ThemeData(
+        primarySwatch: Colors.orange,
+        fontFamily: 'Georgia',
+      ),
+      home: const HomePage(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFF5E6D3), // Crème/beige clair
+              Color(0xFFE8B4A0), // Orange/pêche
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              children: [
+                const SizedBox(height: 30),
+
+                // Titre principal
+                const Text(
+                  'Positive Thinker',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF8B4513),
+                  ),
+                ),
+                
+                const SizedBox(height: 10),
+                
+                // Sous-titre
+                const Text(
+                  'Cultivez votre bonheur au quotidien',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF8B4513),
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 50),
+                
+                // Section Positive Coach
+                _buildFeatureItem(
+                  icon: Icons.favorite,
+                  title: 'Positive Coach',
+                  description: 'Votre accompagnateur personnel vers une vie plus positive',
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Section Ma vie en mieux
+                _buildFeatureItem(
+                  icon: Icons.auto_awesome,
+                  title: 'Ma vie en mieux',
+                  description: 'Transformez vos habitudes pour un quotidien lumineux',
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Section La lentille positive
+                _buildFeatureItem(
+                  icon: Icons.visibility,
+                  title: 'La lentille positive',
+                  description: 'Apprenez à voir le monde sous un angle bienveillant',
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Section Le côté positif en bref
+                _buildFeatureItem(
+                  icon: Icons.flash_on,
+                  title: 'Le côté positif en bref',
+                  description: 'Des inspirations rapides pour booster votre journée',
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Section Une meilleure relecture
+                _buildFeatureItem(
+                  icon: Icons.menu_book,
+                  title: 'Une meilleure relecture',
+                  description: 'Revisitez vos souvenirs avec gratitude et sérénité',
+                ),
+                
+                const SizedBox(height: 50),
+                
+                // Citation en bas
+                const Text(
+                  '"Chaque jour est une nouvelle opportunité de choisir le bonheur."',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    color: Color(0xFF8B4513),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 30),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white),
+        color: Colors.white.withAlpha(80)
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icône dans un cercle blanc
+          Icon(
+            icon,
+            color: Color(0xFFD2691E),
+            size: 40,
+          ),
+          
+          const SizedBox(width: 20),
+          
+          // Texte
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF8B4513),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF8B4513),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
