@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/guardian_article.dart';
 import '../services/guardian_service.dart';
+import 'article_detail_page.dart';
 
 class PositiveNewsPage extends StatelessWidget {
   const PositiveNewsPage({super.key});
@@ -76,36 +77,50 @@ class _ArticleCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 2,
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              article.webTitle,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-                height: 1.3,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ArticleDetailPage(
+                apiUrl: article.apiUrl,
+                title: article.webTitle,
               ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _SectionChip(sectionName: article.sectionName),
-                const Spacer(),
-                Text(
-                  _formatDate(article.webPublicationDate),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF8B4513),
-                    fontStyle: FontStyle.italic,
-                  ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                article.webTitle,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF8B4513),
+                  height: 1.3,
                 ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _SectionChip(sectionName: article.sectionName),
+                  const Spacer(),
+                  Text(
+                    _formatDate(article.webPublicationDate),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF8B4513),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

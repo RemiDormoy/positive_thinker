@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:positive_thinker/coach_page.dart';
 import 'package:positive_thinker/pages/positive_news_page.dart';
+import 'package:positive_thinker/pages/article_detail_page.dart';
 
 void main() {
   runApp(const MyApp());
