@@ -18,7 +18,6 @@ class ArticleDetailPage extends StatefulWidget {
 }
 
 class _ArticleDetailPageState extends State<ArticleDetailPage> {
-
   PositiveNewsStep step = PositiveNewsStep.LOADING_CONTENT;
   String finalContent = "";
   final GeminiNanoService geminiNanoService = GeminiNanoService();
@@ -41,10 +40,36 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
   }
 
   _summarizeArticles(GuardianArticleDetail article) {
+    debugPrint("Texte complet de l'article : ${article.bodyText}");
     geminiNanoService.summarize(article.bodyText).then((summary) {
       setState(() {
+        step = PositiveNewsStep.TRANSLATING;
+      });
+      _translateArticles(summary);
+    });
+  }
+
+  _translateArticles(String article) {
+    debugPrint("Résumé de l'article : $article");
+    final prompt =
+        "Traduit de l'anglais vers le français le texte suivant : $article";
+    geminiNanoService.generateResponse(prompt).then((traduction) {
+      setState(() {
+        step = PositiveNewsStep.ADDING_GOOD_VIBES;
+      });
+      _injectGoodVibes(traduction);
+    });
+  }
+
+  _injectGoodVibes(String article) {
+    debugPrint("Traduction du résumé : $article");
+    final prompt =
+        """Je voudrais que tu reformule le texte suivant, en trouvant des côtés positifs et en faisant sortir ces côtés positifs de manière très accentuée : $article.
+        Le résultat doit faire moins de 100 mots""";
+    geminiNanoService.generateResponse(prompt).then((tadaaaa) {
+      setState(() {
         step = PositiveNewsStep.READY;
-        finalContent = summary;
+        finalContent = tadaaaa;
       });
     });
   }
@@ -58,7 +83,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Article',
+          "Résumé de l'article",
           style: const TextStyle(
             color: Color(0xFF8B4513),
             fontWeight: FontWeight.bold,
@@ -73,24 +98,35 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF5E6D3),
-              Color(0xFFE8B4A0),
-            ],
+            colors: [Color(0xFFF5E6D3), Color(0xFFE8B4A0)],
           ),
         ),
-        child: step == PositiveNewsStep.LOADING_CONTENT ? _LoadingContentFromInternetWidget() :
-        step == PositiveNewsStep.SUMMURAZING_CONTENT ? _LoadingSummarizedContent() :
-        step == PositiveNewsStep.TRANSLATING ? _TranslatingWidget() :
-        step == PositiveNewsStep.ADDING_GOOD_VIBES ? _AddingGoodVibesWidget() :
-        Text(finalContent),
+        child: step == PositiveNewsStep.LOADING_CONTENT
+            ? _LoadingContentFromInternetWidget()
+            : step == PositiveNewsStep.SUMMURAZING_CONTENT
+            ? _LoadingSummarizedContent()
+            : step == PositiveNewsStep.TRANSLATING
+            ? _TranslatingWidget()
+            : step == PositiveNewsStep.ADDING_GOOD_VIBES
+            ? _AddingGoodVibesWidget()
+            : SingleChildScrollView(
+              child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Text(finalContent),
+                    ),
+                  ],
+                ),
+            ),
       ),
     );
   }
 }
 
 class _LoadingContentFromInternetWidget extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return const Center(
@@ -99,9 +135,7 @@ class _LoadingContentFromInternetWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              color: Color(0xFF8B4513),
-            ),
+            CircularProgressIndicator(color: Color(0xFF8B4513)),
             SizedBox(height: 16),
             Text(
               "Chargement du contenu de l'article",
@@ -120,7 +154,6 @@ class _LoadingContentFromInternetWidget extends StatelessWidget {
 }
 
 class _LoadingSummarizedContent extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return const Center(
@@ -129,9 +162,7 @@ class _LoadingSummarizedContent extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              color: Color(0xFF8B4513),
-            ),
+            CircularProgressIndicator(color: Color(0xFF8B4513)),
             SizedBox(height: 16),
             Text(
               "Création du résumé",
@@ -150,7 +181,6 @@ class _LoadingSummarizedContent extends StatelessWidget {
 }
 
 class _TranslatingWidget extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return const Center(
@@ -159,9 +189,7 @@ class _TranslatingWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              color: Color(0xFF8B4513),
-            ),
+            CircularProgressIndicator(color: Color(0xFF8B4513)),
             SizedBox(height: 16),
             Text(
               "Traduction du résumé",
@@ -180,7 +208,6 @@ class _TranslatingWidget extends StatelessWidget {
 }
 
 class _AddingGoodVibesWidget extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return const Center(
@@ -189,9 +216,7 @@ class _AddingGoodVibesWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              color: Color(0xFF8B4513),
-            ),
+            CircularProgressIndicator(color: Color(0xFF8B4513)),
             SizedBox(height: 16),
             Text(
               "Injection d'ondes positives",
