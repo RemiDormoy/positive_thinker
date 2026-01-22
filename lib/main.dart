@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:positive_thinker/coach_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,11 +12,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Pensée Positive',
-      theme: ThemeData(
-        primarySwatch: Colors.orange,
-        fontFamily: 'Georgia',
-      ),
+      theme: ThemeData(primarySwatch: Colors.orange, fontFamily: 'Georgia'),
       home: const HomePage(),
+      routes: {"/coach": (context) => SmartCoachAssistantPage()},
       debugShowCheckedModeBanner: false,
     );
   }
@@ -54,9 +53,9 @@ class HomePage extends StatelessWidget {
                     color: Color(0xFF8B4513),
                   ),
                 ),
-                
+
                 const SizedBox(height: 10),
-                
+
                 // Sous-titre
                 const Text(
                   'Cultivez votre bonheur au quotidien',
@@ -67,54 +66,74 @@ class HomePage extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                
+
                 const SizedBox(height: 50),
-                
+
                 // Section Positive Coach
                 _buildFeatureItem(
                   icon: Icons.favorite,
                   title: 'Positive Coach',
-                  description: 'Votre accompagnateur personnel vers une vie plus positive',
+                  description:
+                      'Votre accompagnateur personnel vers une vie plus positive',
+                  onClick: () {
+                    Navigator.of(context).pushNamed("/coach");
+                  },
                 ),
-                
+
                 const SizedBox(height: 30),
-                
+
                 // Section Ma vie en mieux
                 _buildFeatureItem(
                   icon: Icons.auto_awesome,
                   title: 'Ma vie en mieux',
-                  description: 'Transformez vos habitudes pour un quotidien lumineux',
+                  description:
+                      'Transformez vos habitudes pour un quotidien lumineux',
+                  onClick: () {
+                    Navigator.of(context).pushNamed("/coach");
+                  },
                 ),
-                
+
                 const SizedBox(height: 30),
-                
+
                 // Section La lentille positive
                 _buildFeatureItem(
                   icon: Icons.visibility,
                   title: 'La lentille positive',
-                  description: 'Apprenez à voir le monde sous un angle bienveillant',
+                  description:
+                      'Apprenez à voir le monde sous un angle bienveillant',
+                  onClick: () {
+                    Navigator.of(context).pushNamed("/coach");
+                  },
                 ),
-                
+
                 const SizedBox(height: 30),
-                
+
                 // Section Le côté positif en bref
                 _buildFeatureItem(
                   icon: Icons.flash_on,
                   title: 'Le côté positif en bref',
-                  description: 'Des inspirations rapides pour booster votre journée',
+                  description:
+                      'Des inspirations rapides pour booster votre journée',
+                  onClick: () {
+                    Navigator.of(context).pushNamed("/coach");
+                  },
                 ),
-                
+
                 const SizedBox(height: 30),
-                
+
                 // Section Une meilleure relecture
                 _buildFeatureItem(
                   icon: Icons.menu_book,
                   title: 'Une meilleure relecture',
-                  description: 'Revisitez vos souvenirs avec gratitude et sérénité',
+                  description:
+                      'Revisitez vos souvenirs avec gratitude et sérénité',
+                  onClick: () {
+                    Navigator.of(context).pushNamed("/coach");
+                  },
                 ),
-                
+
                 const SizedBox(height: 50),
-                
+
                 // Citation en bas
                 const Text(
                   '"Chaque jour est une nouvelle opportunité de choisir le bonheur."',
@@ -125,7 +144,7 @@ class HomePage extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                
+
                 const SizedBox(height: 30),
               ],
             ),
@@ -139,53 +158,55 @@ class HomePage extends StatelessWidget {
     required IconData icon,
     required String title,
     required String description,
+    required void Function() onClick,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white),
-        color: Colors.white.withAlpha(80)
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Icône dans un cercle blanc
-          Icon(
-            icon,
-            color: Color(0xFFD2691E),
-            size: 40,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onClick,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.white),
+            color: Colors.white.withAlpha(80),
           ),
-          
-          const SizedBox(width: 20),
-          
-          // Texte
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF8B4513),
-                  ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icône dans un cercle blanc
+              Icon(icon, color: Color(0xFFD2691E), size: 40),
+
+              const SizedBox(width: 20),
+
+              // Texte
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF8B4513),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF8B4513),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF8B4513),
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

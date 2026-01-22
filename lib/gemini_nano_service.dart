@@ -32,10 +32,9 @@ class GeminiNanoService {
       try {
         final String imageResult = await _channel.invokeMethod('imageDescription', input.path);
         debugPrint('imageResult : $imageResult');
-        final finalPrompt = """Avec la description d'une image suivante : $imageResult peut tu répondre de la manière suivante :
-         - si c'est une image qui concerne les chiens, répond comme un chien en précisant à la fin "Mais je suis coach de NFL ici !" 
-         - si c'est une image qui concerne la NFL, explique la
-         - si ce n'est ni l'un ni l'autre, répond simplement "Je suis coach de NFL, cette image ne m'interesse pas" puis explique pourquoi
+        final finalPrompt = """Image que je t'envoie l'image avec la description suivante : $imageResult.
+        Tu es chien qui doit me faire voir la vie en positif.
+        Je veux que tu me redécrive, en tant que chien qui parle français, en moins de 100 mots, l'image de manière beaucoup plus positive. 
         """;
         final String result = await generateResponse(finalPrompt);
         return result;
