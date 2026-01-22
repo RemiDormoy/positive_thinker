@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:positive_thinker/coach_page.dart';
+import 'package:positive_thinker/pages/positive_news_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +15,10 @@ class MyApp extends StatelessWidget {
       title: 'Pensée Positive',
       theme: ThemeData(primarySwatch: Colors.orange, fontFamily: 'Georgia'),
       home: const HomePage(),
-      routes: {"/coach": (context) => SmartCoachAssistantPage()},
+      routes: {
+        "/coach": (context) => SmartCoachAssistantPage(),
+        "/positive_news": (context) => const PositiveNewsPage(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }
@@ -93,7 +97,7 @@ class HomePage extends StatelessWidget {
                   },
                 ),
 
-                const SizedBox(height: 30),
+                /*const SizedBox(height: 30),
 
                 // Section La lentille positive
                 _buildFeatureItem(
@@ -104,7 +108,7 @@ class HomePage extends StatelessWidget {
                   onClick: () {
                     Navigator.of(context).pushNamed("/coach");
                   },
-                ),
+                ),*/
 
                 const SizedBox(height: 30),
 
@@ -115,7 +119,7 @@ class HomePage extends StatelessWidget {
                   description:
                       'Des inspirations rapides pour booster votre journée',
                   onClick: () {
-                    Navigator.of(context).pushNamed("/coach");
+                    Navigator.of(context).pushNamed("/positive_news");
                   },
                 ),
 
