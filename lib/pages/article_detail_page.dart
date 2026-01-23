@@ -80,10 +80,11 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         Le résultat doit faire moins de 100 mots et être super enthousiaste""";
     geminiNanoService.generateResponse(prompt).then((tadaaaa) {
       setState(() {
-        step = PositiveNewsStep.EMOJIFICATION;
-        beforeEmoji = tadaaaa;
+        step = PositiveNewsStep.READY;
+        //beforeEmoji = tadaaaa;
+        finalContent = tadaaaa;
       });
-      _injectEmojis(tadaaaa);
+      //_injectEmojis(tadaaaa);
     });
   }
 

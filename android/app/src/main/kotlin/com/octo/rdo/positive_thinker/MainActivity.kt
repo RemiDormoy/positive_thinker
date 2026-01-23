@@ -13,6 +13,7 @@ import com.google.mlkit.genai.imagedescription.ImageDescriberOptions
 import com.google.mlkit.genai.imagedescription.ImageDescription
 import com.google.mlkit.genai.imagedescription.ImageDescriptionRequest
 import com.google.mlkit.genai.prompt.Generation
+import com.google.mlkit.genai.prompt.GenerationConfig
 import com.google.mlkit.genai.prompt.GenerativeModel
 import com.google.mlkit.genai.proofreading.Proofreader
 import com.google.mlkit.genai.proofreading.ProofreaderOptions
