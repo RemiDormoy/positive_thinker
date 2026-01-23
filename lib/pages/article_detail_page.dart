@@ -393,7 +393,7 @@ class _WarningWidget extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.1),
+        color: Colors.orange.withValues(alpha: 0.02),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.orange, width: 2),
       ),
@@ -402,7 +402,7 @@ class _WarningWidget extends StatelessWidget {
         children: [
           Icon(
             Icons.warning,
-            color: Colors.orange.shade700,
+            color: Colors.orange.shade900,
             size: 24,
           ),
           const SizedBox(width: 12),
@@ -411,7 +411,7 @@ class _WarningWidget extends StatelessWidget {
               'Attention, les faits sont légèrement modifiés à l\'aide de l\'IA pour leur donner un aspect positif, vérifiez-les sur internet avant de les partager',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.orange.shade800,
+                color: Colors.orange.shade900,
                 fontWeight: FontWeight.w500,
               ),
             ),
