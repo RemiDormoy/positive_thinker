@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:positive_thinker/gemini_nano_service.dart';
+import 'package:positive_thinker/pages/article_detail_page.dart';
 
 class WritingImprovementPage extends StatefulWidget {
   const WritingImprovementPage({super.key});
@@ -11,11 +13,16 @@ class _WritingImprovementPageState extends State<WritingImprovementPage> {
   final TextEditingController _textController = TextEditingController();
   int _wordCount = 0;
   static const int _maxWords = 150;
+  final GeminiNanoService geminiNanoService = GeminiNanoService();
+  CorrectionSteps step = CorrectionSteps.WAITING_FOR_INPUT;
+  String userInput = "";
+  String correctedText = "";
 
   @override
   void initState() {
     super.initState();
     _textController.addListener(_updateWordCount);
+    _initializeGeminiNano();
   }
 
   @override
@@ -23,6 +30,10 @@ class _WritingImprovementPageState extends State<WritingImprovementPage> {
     _textController.removeListener(_updateWordCount);
     _textController.dispose();
     super.dispose();
+  }
+
+  Future<void> _initializeGeminiNano() async {
+    await geminiNanoService.initialize();
   }
 
   void _updateWordCount() {
@@ -40,13 +51,16 @@ class _WritingImprovementPageState extends State<WritingImprovementPage> {
   }
 
   void _onCorrectPressed() {
-    // Pour le moment, ne fait rien
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Fonctionnalité de correction en développement'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    setState(() {
+      userInput = _textController.text.trim();
+      step = CorrectionSteps.CORRECTING;
+    });
+    geminiNanoService.correct(userInput).then((corrected) {
+      setState(() {
+        correctedText = corrected;
+        step = CorrectionSteps.READY;
+      });
+    });
   }
 
   @override
@@ -82,21 +96,40 @@ class _WritingImprovementPageState extends State<WritingImprovementPage> {
                       _InstructionWidget(),
                       
                       const SizedBox(height: 30),
-                      
-                      // Champ de texte
-                      _TextFieldWidget(
-                        controller: _textController,
-                        wordCount: _wordCount,
-                        maxWords: _maxWords,
-                      ),
-                      
-                      const SizedBox(height: 30),
-                      
-                      // Bouton corriger
-                      _CorrectButtonWidget(
-                        onPressed: _wordCount > 0 && _wordCount <= _maxWords ? _onCorrectPressed : null,
-                        isEnabled: _wordCount > 0 && _wordCount <= _maxWords,
-                      ),
+
+                      if (step == CorrectionSteps.READY) ...[
+                        _CorrectedTextWidget(text: correctedText),
+                        const SizedBox(height: 30),
+                      ],
+
+                      if (step != CorrectionSteps.READY) ...[
+                        // Champ de texte
+                        _TextFieldWidget(
+                          controller: _textController,
+                          wordCount: _wordCount,
+                          maxWords: _maxWords,
+                          enabled: step == CorrectionSteps.WAITING_FOR_INPUT,
+                        ),
+                        
+                        const SizedBox(height: 30),
+                        
+                        // Bouton corriger
+                        _CorrectButtonWidget(
+                          onPressed: _wordCount > 0 && _wordCount <= _maxWords && step == CorrectionSteps.WAITING_FOR_INPUT ? _onCorrectPressed : null,
+                          isEnabled: _wordCount > 0 && _wordCount <= _maxWords && step == CorrectionSteps.WAITING_FOR_INPUT,
+                          loading: step == CorrectionSteps.CORRECTING,
+                        ),
+                      ],
+
+                      if (userInput.isNotEmpty) ...[
+                        const SizedBox(height: 30),
+                        ExpandableContentWidget(
+                          title: 'Votre texte original',
+                          content: userInput,
+                          icon: Icons.edit_note,
+                          withPadding: false,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -107,6 +140,12 @@ class _WritingImprovementPageState extends State<WritingImprovementPage> {
       ),
     );
   }
+}
+
+enum CorrectionSteps {
+  WAITING_FOR_INPUT,
+  CORRECTING,
+  READY,
 }
 
 // Widget privé pour le header
@@ -193,16 +232,77 @@ class _InstructionWidget extends StatelessWidget {
   }
 }
 
+// Widget privé pour afficher le texte corrigé
+class _CorrectedTextWidget extends StatelessWidget {
+  final String text;
+
+  const _CorrectedTextWidget({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Votre texte corrigé',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF8B4513),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Color(0xFF8B4513),
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // Widget privé pour le champ de texte
 class _TextFieldWidget extends StatelessWidget {
   final TextEditingController controller;
   final int wordCount;
   final int maxWords;
+  final bool enabled;
 
   const _TextFieldWidget({
     required this.controller,
     required this.wordCount,
     required this.maxWords,
+    required this.enabled,
   });
 
   @override
@@ -223,7 +323,7 @@ class _TextFieldWidget extends StatelessWidget {
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.9),
+            color: enabled ? Colors.white.withValues(alpha: 0.9) : Colors.grey.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isOverLimit ? Colors.red : Colors.white,
@@ -233,15 +333,17 @@ class _TextFieldWidget extends StatelessWidget {
           child: TextField(
             controller: controller,
             maxLines: 8,
-            style: const TextStyle(
+            enabled: enabled,
+            style: TextStyle(
               fontSize: 16,
-              color: Color(0xFF8B4513),
+              color: enabled ? Color(0xFF8B4513) : Colors.grey,
             ),
             decoration: InputDecoration(
-              hintText: 'Collez votre message ici...',
+              hintText: enabled ? 'Collez votre message ici...' : 'Correction en cours...',
               hintStyle: TextStyle(
-                color: Color(0xFF8B4513).withValues(alpha: 0.6),
+                color: enabled ? Color(0xFF8B4513).withValues(alpha: 0.6) : Colors.grey,
                 fontSize: 16,
+                fontStyle: enabled ? FontStyle.normal : FontStyle.italic,
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
@@ -280,10 +382,12 @@ class _TextFieldWidget extends StatelessWidget {
 class _CorrectButtonWidget extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isEnabled;
+  final bool loading;
 
   const _CorrectButtonWidget({
     required this.onPressed,
     required this.isEnabled,
+    required this.loading,
   });
 
   @override
@@ -304,15 +408,17 @@ class _CorrectButtonWidget extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.auto_fix_high,
-              size: 24,
-              color: Colors.white,
-            ),
+            loading
+                ? CircularProgressIndicator(color: Colors.white)
+                : Icon(
+                    Icons.auto_fix_high,
+                    size: 24,
+                    color: Colors.white,
+                  ),
             const SizedBox(width: 12),
-            const Text(
-              'Corriger',
-              style: TextStyle(
+            Text(
+              loading ? 'Correction en cours...' : 'Corriger',
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
