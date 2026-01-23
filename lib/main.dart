@@ -114,10 +114,10 @@ class HomePage extends StatelessWidget {
 
                 // Section Le côté positif en bref
                 _buildFeatureItem(
-                  icon: Icons.flash_on,
+                  icon: Icons.menu_book,
                   title: 'Le côté positif en bref',
                   description:
-                      'Des inspirations rapides pour booster votre journée',
+                      'Les news de la france mais en plus positif',
                   onClick: () {
                     Navigator.of(context).pushNamed("/positive_news");
                   },
@@ -127,7 +127,7 @@ class HomePage extends StatelessWidget {
 
                 // Section Une meilleure relecture
                 _buildFeatureItem(
-                  icon: Icons.menu_book,
+                  icon: Icons.flash_on,
                   title: 'Une meilleure relecture',
                   description:
                       'Revisitez vos souvenirs avec gratitude et sérénité',
