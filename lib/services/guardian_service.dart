@@ -32,6 +32,30 @@ class GuardianService {
     }
   }
 
+  Future<List<GuardianArticle>> searchArticles(String query) async {
+    try {
+      final uri = Uri.parse(
+        '$_baseUrl/search?api-key=$_apiKey&q=$query'
+      );
+
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final body = response.body;
+        final guardianResponse = GuardianResponse.fromJson(
+          json.decode(body)
+        );
+        return guardianResponse.results;
+      } else {
+        debugPrint('Failed to search articles: ${response.statusCode}');
+        throw Exception('Failed to search articles: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Failed to search articles: $e');
+      throw Exception('Error searching articles: $e');
+    }
+  }
+
   Future<GuardianArticleDetail> fetchArticleDetail(String apiUrl) async {
     try {
       final uri = Uri.parse(
