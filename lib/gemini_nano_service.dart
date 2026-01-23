@@ -121,6 +121,7 @@ class GeminiNanoService {
 enum GeminiReformulate {
   DYNAMISE,
   EMOJIFY,
+  REFORMULATE,
   DEVELOP;
 
   String toLabel() {
@@ -129,6 +130,8 @@ enum GeminiReformulate {
         return "DEVELOP";
       case EMOJIFY:
         return "EMOJIFY";
+      case REFORMULATE:
+        return "REFORMULATE";
       case DYNAMISE:
         return "DYNAMISE";
     }

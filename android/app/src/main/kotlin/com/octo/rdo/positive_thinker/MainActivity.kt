@@ -186,6 +186,7 @@ class MainActivity : FlutterActivity() {
                     val outputType = when (type) {
                         "DEVELOP" -> RewriterOptions.OutputType.ELABORATE
                         "EMOJIFY" -> RewriterOptions.OutputType.EMOJIFY
+                        "REFORMULATE" -> RewriterOptions.OutputType.REPHRASE
                         "DYNAMISE" -> RewriterOptions.OutputType.FRIENDLY
                         else -> RewriterOptions.OutputType.ELABORATE
                     }

@@ -62,7 +62,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     debugPrint("Résumé de l'article : $article");
     final prompt =
         "Traduit de l'anglais vers le français le texte suivant : $article";
-    geminiNanoService.generateResponse(prompt).then((traduction) {
+    geminiNanoService.reformulate(prompt, GeminiReformulate.REFORMULATE).then((traduction) {
       setState(() {
         step = PositiveNewsStep.ADDING_GOOD_VIBES;
         firstTranslation = traduction;
