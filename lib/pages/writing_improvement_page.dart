@@ -63,6 +63,15 @@ class _WritingImprovementPageState extends State<WritingImprovementPage> {
     });
   }
 
+  void _resetToInitialState() {
+    setState(() {
+      step = CorrectionSteps.WAITING_FOR_INPUT;
+      userInput = "";
+      correctedText = "";
+    });
+    _textController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,6 +108,8 @@ class _WritingImprovementPageState extends State<WritingImprovementPage> {
 
                       if (step == CorrectionSteps.READY) ...[
                         _CorrectedTextWidget(text: correctedText),
+                        const SizedBox(height: 30),
+                        _RestartButton(onPressed: _resetToInitialState),
                         const SizedBox(height: 30),
                       ],
 
@@ -418,6 +429,50 @@ class _CorrectButtonWidget extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               loading ? 'Correction en cours...' : 'Corriger',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Widget privé pour le bouton Recommencer
+class _RestartButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _RestartButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.refresh,
+              size: 24,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Recommencer',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

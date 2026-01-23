@@ -86,6 +86,17 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
     });
   }
 
+  void _resetToInitialState() {
+    setState(() {
+      step = EnjolivationSteps.WAITING_FOR_INPUT;
+      userInput = "";
+      developpedIteration = "";
+      dynamisedText = "";
+      finalContent = "";
+    });
+    _textController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isOverLimit = _wordCount > _maxWords;
@@ -127,6 +138,8 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
 
                       if (step == EnjolivationSteps.READY) ...[
                         Text(finalContent),
+                        const SizedBox(height: 30),
+                        _RestartButton(onPressed: _resetToInitialState),
                         const SizedBox(height: 30),
                       ],
 
@@ -420,4 +433,56 @@ enum EnjolivationSteps {
   DYNAMISING,
   ADDING_EMOJIS,
   READY,
+}
+
+// Widget privé pour le bouton Recommencer
+class _RestartButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _RestartButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withValues(alpha: 0.4),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(15),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.refresh, color: Colors.white, size: 24),
+                SizedBox(width: 12),
+                Text(
+                  'Recommencer',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
