@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:positive_thinker/coach_page.dart';
 import 'package:positive_thinker/pages/positive_news_page.dart';
+import 'package:positive_thinker/pages/better_reading_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
       routes: {
         "/coach": (context) => SmartCoachAssistantPage(),
         "/positive_news": (context) => const PositiveNewsPage(),
+        "/better_reading": (context) => const BetterReadingPage(),
       },
       debugShowCheckedModeBanner: false,
     );
@@ -132,7 +134,7 @@ class HomePage extends StatelessWidget {
                   description:
                       'Revisitez vos souvenirs avec gratitude et sérénité',
                   onClick: () {
-                    Navigator.of(context).pushNamed("/coach");
+                    Navigator.of(context).pushNamed("/better_reading");
                   },
                 ),
 

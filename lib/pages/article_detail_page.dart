@@ -166,17 +166,17 @@ class _Content extends StatelessWidget {
             onLinkTap: () => _launchUrl(articleDetail.webUrl),
           ),
           _WarningWidget(),
-          _ExpandableContentWidget(
+          ExpandableContentWidget(
             title: 'Contenu original (en anglais)',
             content: originalContent,
             icon: Icons.article,
           ),
-          _ExpandableContentWidget(
+          ExpandableContentWidget(
             title: 'Premier résumé',
             content: originalSummary,
             icon: Icons.summarize,
           ),
-          _ExpandableContentWidget(
+          ExpandableContentWidget(
             title: 'Première traduction',
             content: firstTranslation,
             icon: Icons.translate,
@@ -422,28 +422,30 @@ class _WarningWidget extends StatelessWidget {
   }
 }
 
-class _ExpandableContentWidget extends StatefulWidget {
+class ExpandableContentWidget extends StatefulWidget {
   final String title;
   final String content;
   final IconData icon;
+  final bool withPadding;
 
-  const _ExpandableContentWidget({
+  const ExpandableContentWidget({
     required this.title,
     required this.content,
     required this.icon,
+    this.withPadding = true,
   });
 
   @override
-  State<_ExpandableContentWidget> createState() => _ExpandableContentWidgetState();
+  State<ExpandableContentWidget> createState() => _ExpandableContentWidgetState();
 }
 
-class _ExpandableContentWidgetState extends State<_ExpandableContentWidget> {
+class _ExpandableContentWidgetState extends State<ExpandableContentWidget> {
   bool isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      margin: EdgeInsets.symmetric(horizontal: widget.withPadding? 20 : 0, vertical: 5),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(12),

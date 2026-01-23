@@ -26,7 +26,6 @@ class GeminiNanoService {
   }
 
   Future<String> summarize(String input) async {
-    // Vérifier si nous sommes sur Android
     if (Platform.isAndroid) {
       try {
         final String result = await _channel.invokeMethod('summarize', input);
@@ -81,6 +80,36 @@ class GeminiNanoService {
     } else {
       // iOS, Web ou autres plateformes
       return false;
+    }
+  }
+
+  Future<String> reformulate(String userInput, GeminiReformulate type) async {
+    if (Platform.isAndroid) {
+      try {
+        final String result = await _channel.invokeMethod('reformulate', [userInput, type.toLabel()]);
+        return result;
+      } catch (e, s) {
+        // En cas d'erreur avec le code natif, retourner le message d'indisponibilité
+        debugPrint(e.toString());
+        debugPrint(s.toString());
+        return "Je ne suis pas disponible sur ce device";
+      }
+    } else {
+      // iOS, Web ou autres plateformes
+      return "Je ne suis pas disponible sur ce device";
+    }
+  }
+}
+
+enum GeminiReformulate {
+  DEVELOP;
+
+  String toLabel() {
+    switch (this) {
+      case DEVELOP:
+        return "DEVELOP";
+      default:
+        return "DEVELOP";
     }
   }
 }
