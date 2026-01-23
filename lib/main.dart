@@ -91,9 +91,9 @@ class HomePage extends StatelessWidget {
                 // Section Ma vie en mieux
                 _buildFeatureItem(
                   icon: Icons.auto_awesome,
-                  title: 'Ma vie en mieux',
+                  title: 'Mon écriture en mieux',
                   description:
-                      'Transformez vos habitudes pour un quotidien lumineux',
+                      'Lachez vos messages les plus moches, je les corrigerais',
                   onClick: () {
                     Navigator.of(context).pushNamed("/coach");
                   },
@@ -132,7 +132,7 @@ class HomePage extends StatelessWidget {
                   icon: Icons.flash_on,
                   title: 'Une meilleure relecture',
                   description:
-                      'Revisitez vos souvenirs avec gratitude et sérénité',
+                      'Revisitez votre vie avec positivité',
                   onClick: () {
                     Navigator.of(context).pushNamed("/better_reading");
                   },
