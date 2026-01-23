@@ -74,8 +74,9 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
   _injectGoodVibes(String article) {
     debugPrint("Traduction du résumé : $article");
     final prompt =
-        """Je voudrais que tu reformule le texte suivant, en trouvant des côtés positifs et en faisant sortir ces côtés positifs de manière très accentuée : $article.
-        Le résultat doit faire moins de 100 mots et être très positif et enthousiaste""";
+        """Le texte suivant est un résumé d'article en quelques points : $article.
+        Je veux que tu gardes la même struture et que pour chacun des points tu les présentes comme des supers nouvelles.
+        Le résultat doit faire moins de 100 mots et être super enthousiaste""";
     geminiNanoService.generateResponse(prompt).then((tadaaaa) {
       setState(() {
         step = PositiveNewsStep.READY;
