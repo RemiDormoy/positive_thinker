@@ -14,6 +14,10 @@ import com.google.mlkit.genai.imagedescription.ImageDescription
 import com.google.mlkit.genai.imagedescription.ImageDescriptionRequest
 import com.google.mlkit.genai.prompt.Generation
 import com.google.mlkit.genai.prompt.GenerativeModel
+import com.google.mlkit.genai.rewriting.Rewriter
+import com.google.mlkit.genai.rewriting.RewriterOptions
+import com.google.mlkit.genai.rewriting.Rewriting
+import com.google.mlkit.genai.rewriting.RewritingRequest
 import com.google.mlkit.genai.summarization.Summarization
 import com.google.mlkit.genai.summarization.SummarizationRequest
 import com.google.mlkit.genai.summarization.Summarizer
@@ -21,14 +25,17 @@ import com.google.mlkit.genai.summarization.SummarizerOptions
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : FlutterActivity() {
     private lateinit var generativeModel: GenerativeModel
     private lateinit var imageDescriber: ImageDescriber
     private lateinit var summarizer: Summarizer
+    private lateinit var rewriter: Rewriter
     private var modelDownloaded: Boolean = false
     private val CHANNEL = "gemini_nano_service"
 
@@ -59,6 +66,11 @@ class MainActivity : FlutterActivity() {
             } else if (call.method == "summarize") {
                 val promptString = call.arguments<String>()
                 summarizeContent(promptString!!, result)
+            } else if (call.method == "reformulate") {
+                val promptString = call.arguments<List<String>>()
+                val originalText = promptString!![0]
+                val type = promptString[1]
+                rewriteContent(originalText, type, result)
             } else if (call.method == "imageDescription") {
                 val filePath = call.arguments<String>()
                 describeImage(filePath!!, result)
@@ -79,16 +91,26 @@ class MainActivity : FlutterActivity() {
         if (::summarizer.isInitialized) {
             summarizer.close()
         }
+        if (::rewriter.isInitialized) {
+            rewriter.close()
+        }
     }
 
     private fun generateContent(request: String, result: MethodChannel.Result) {
         lifecycleScope.future {
-            try {
-                val response = generativeModel.generateContent(request)
-                val generatedText = response.candidates.firstOrNull()?.text ?: ""
-                result.success(generatedText)
-            } catch (e: Exception) {
-                result.error("GENERATION_ERROR", e.message ?: "Failed to generate content", null)
+            withContext(Dispatchers.IO) {
+
+                try {
+                    val response = generativeModel.generateContent(request)
+                    val generatedText = response.candidates.firstOrNull()?.text ?: ""
+                    result.success(generatedText)
+                } catch (e: Exception) {
+                    result.error(
+                        "GENERATION_ERROR",
+                        e.message ?: "Failed to generate content",
+                        null
+                    )
+                }
             }
         }
     }
@@ -98,16 +120,55 @@ class MainActivity : FlutterActivity() {
         result: MethodChannel.Result
     ) {
         lifecycleScope.future {
-            try {
-                val summarizerOptions = SummarizerOptions.builder(context)
-                    .setInputType(SummarizerOptions.InputType.ARTICLE)
-                    .setOutputType(SummarizerOptions.OutputType.THREE_BULLETS)
-                    .setLanguage(SummarizerOptions.Language.ENGLISH)
-                    .build()
-                summarizer = Summarization.getClient(summarizerOptions)
-                prepareAndStartSummarization(summarizer, promptString, result)
-            } catch (e: Exception) {
-                result.error("GENERATION_ERROR", e.message ?: "Failed to generate content", null)
+            withContext(Dispatchers.IO) {
+                try {
+                    val summarizerOptions = SummarizerOptions.builder(context)
+                        .setInputType(SummarizerOptions.InputType.ARTICLE)
+                        .setOutputType(SummarizerOptions.OutputType.THREE_BULLETS)
+                        .setLanguage(SummarizerOptions.Language.ENGLISH)
+                        .build()
+                    summarizer = Summarization.getClient(summarizerOptions)
+                    prepareAndStartSummarization(summarizer, promptString, result)
+                } catch (e: Exception) {
+                    result.error(
+                        "GENERATION_ERROR",
+                        e.message ?: "Failed to generate content",
+                        null
+                    )
+                }
+            }
+        }
+    }
+
+    private fun rewriteContent(
+        originalContent: String,
+        type: String,
+        result: MethodChannel.Result
+    ) {
+        lifecycleScope.future {
+            withContext(Dispatchers.IO) {
+                try {
+                    val outputType = when (type) {
+                        "DEVELOP" -> RewriterOptions.OutputType.ELABORATE
+                        "EMOJIFY" -> RewriterOptions.OutputType.EMOJIFY
+                        "DYNAMISE" -> RewriterOptions.OutputType.FRIENDLY
+                        else -> RewriterOptions.OutputType.ELABORATE
+                    }
+                    val rewriterOptions = RewriterOptions.builder(context)
+                        // OutputType can be one of the following: ELABORATE, EMOJIFY, SHORTEN,
+                        // FRIENDLY, PROFESSIONAL, REPHRASE
+                        .setOutputType(outputType)
+                        .setLanguage(RewriterOptions.Language.FRENCH)
+                        .build()
+                    rewriter = Rewriting.getClient(rewriterOptions)
+                    prepareAndStartRewrite(rewriter, originalContent, result)
+                } catch (e: Exception) {
+                    result.error(
+                        "GENERATION_ERROR",
+                        e.message ?: "Failed to generate content",
+                        null
+                    )
+                }
             }
         }
     }
@@ -273,4 +334,53 @@ fun startSummarizationRequest(text: String, summarizer: Summarizer, result: Meth
 
     val summarizationResult = summarizer.runInference(summarizationRequest).get().summary
     result.success(summarizationResult)
+}
+
+fun startRewritingRequest(text: String, rewriter: Rewriter, result: MethodChannel.Result) {
+    // Create task request
+    val rewritingRequest = RewritingRequest.builder(text).build()
+    val rewriteResults =
+        rewriter.runInference(rewritingRequest).get()
+    val returnString = rewriteResults.results[rewriteResults.results.size - 1].text
+
+    result.success(returnString)
+
+}
+
+suspend fun prepareAndStartRewrite(
+    rewriter: Rewriter,
+    textToRewrite: String,
+    result: MethodChannel.Result
+) {
+    // Check feature availability, status will be one of the following:
+    // UNAVAILABLE, DOWNLOADABLE, DOWNLOADING, AVAILABLE
+    val featureStatus = rewriter.checkFeatureStatus().await()
+
+    if (featureStatus == FeatureStatus.DOWNLOADABLE) {
+        // Download feature if necessary.
+        // If downloadFeature is not called, the first inference request will
+        // also trigger the feature to be downloaded if it's not already
+        // downloaded.
+        rewriter.downloadFeature(object : DownloadCallback {
+            override fun onDownloadStarted(bytesToDownload: Long) {}
+
+            override fun onDownloadFailed(e: GenAiException) {}
+
+            override fun onDownloadProgress(totalBytesDownloaded: Long) {}
+
+            override fun onDownloadCompleted() {
+                startRewritingRequest(textToRewrite, rewriter, result)
+            }
+        })
+    } else if (featureStatus == FeatureStatus.DOWNLOADING) {
+        // Inference request will automatically run once feature is
+        // downloaded.
+        // If Gemini Nano is already downloaded on the device, the
+        // feature-specific LoRA adapter model will be downloaded
+        // quickly. However, if Gemini Nano is not already downloaded,
+        // the download process may take longer.
+        startRewritingRequest(textToRewrite, rewriter, result)
+    } else if (featureStatus == FeatureStatus.AVAILABLE) {
+        startRewritingRequest(textToRewrite, rewriter, result)
+    }
 }

@@ -102,14 +102,18 @@ class GeminiNanoService {
 }
 
 enum GeminiReformulate {
+  DYNAMISE,
+  EMOJIFY,
   DEVELOP;
 
   String toLabel() {
     switch (this) {
       case DEVELOP:
         return "DEVELOP";
-      default:
-        return "DEVELOP";
+      case EMOJIFY:
+        return "EMOJIFY";
+      case DYNAMISE:
+        return "DYNAMISE";
     }
   }
 }

@@ -16,6 +16,9 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
   final GeminiNanoService geminiNanoService = GeminiNanoService();
   EnjolivationSteps step = EnjolivationSteps.WAITING_FOR_INPUT;
   String userInput = "";
+  String developpedIteration = "";
+  String dynamisedText = "";
+  String finalContent = "";
 
   @override
   void initState() {
@@ -49,13 +52,44 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
       userInput = _textController.text.trim();
       step = EnjolivationSteps.DEVELOPPING;
     });
-    geminiNanoService.reformulate(userInput, GeminiReformulate.DEVELOP);
+    geminiNanoService.reformulate(userInput, GeminiReformulate.DEVELOP).then((
+      firstIteration,
+    ) {
+      setState(() {
+        developpedIteration = firstIteration;
+        step = EnjolivationSteps.DYNAMISING;
+      });
+      _dynamising(firstIteration);
+    });
+  }
+
+  void _dynamising(String firstIteration) {
+    geminiNanoService.reformulate(firstIteration, GeminiReformulate.DYNAMISE).then((
+      dynamised,
+    ) {
+      setState(() {
+        dynamisedText = dynamised;
+        step = EnjolivationSteps.ADDING_EMOJIS;
+      });
+      _emojify(dynamised);
+    });
+  }
+
+  void _emojify(String dynamised) {
+    geminiNanoService.reformulate(dynamised, GeminiReformulate.EMOJIFY).then((
+      emojiText,
+    ) {
+      setState(() {
+        finalContent = emojiText;
+        step = EnjolivationSteps.READY;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final isOverLimit = _wordCount > _maxWords;
-    
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -73,39 +107,51 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
             children: [
               // En-tête avec bouton retour
               _HeaderWidget(onBack: () => Navigator.of(context).pop()),
-              
+
               // Contenu principal
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SizedBox(height: 20),
-                      
+
                       // Instructions
                       _InstructionWidget(),
-                      
+
                       const SizedBox(height: 30),
-                      
-                      // Champ de texte
-                      _TextInputWidget(
-                        controller: _textController,
-                        wordCount: _wordCount,
-                        maxWords: _maxWords,
-                        isOverLimit: isOverLimit,
-                        enabled: step == EnjolivationSteps.WAITING_FOR_INPUT,
-                      ),
-                      
-                      const SizedBox(height: 30),
-                      
-                      // Bouton Enjoliver
-                      _EnjolliverButton(
-                        loading: step == EnjolivationSteps.DEVELOPPING,
-                        onPressed: _textController.text.trim().isNotEmpty && !isOverLimit
-                            ? _onEnjoliver
-                            : null,
-                      ),
+
+                      if (step == EnjolivationSteps.READY) ...[
+                        Text(finalContent),
+                        const SizedBox(height: 30),
+                      ],
+
+                      if (step != EnjolivationSteps.READY) ...[
+                        // Champ de texte
+                        _TextInputWidget(
+                          controller: _textController,
+                          wordCount: _wordCount,
+                          maxWords: _maxWords,
+                          isOverLimit: isOverLimit,
+                          enabled: step == EnjolivationSteps.WAITING_FOR_INPUT,
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        // Bouton Enjoliver
+                        _EnjolliverButton(
+                          loading: step == EnjolivationSteps.DEVELOPPING,
+                          onPressed:
+                              _textController.text.trim().isNotEmpty &&
+                                  !isOverLimit
+                              ? _onEnjoliver
+                              : null,
+                        ),
+                      ],
 
                       if (userInput.isNotEmpty) ...[
                         const SizedBox(height: 30),
@@ -116,7 +162,25 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
                           withPadding: false,
                         ),
                         const SizedBox(height: 30),
-                      ]
+                      ],
+                      if (developpedIteration.isNotEmpty) ...[
+                        ExpandableContentWidget(
+                          title: 'Augmentation du texte',
+                          content: developpedIteration,
+                          icon: Icons.model_training_outlined,
+                          withPadding: false,
+                        ),
+                        const SizedBox(height: 30),
+                      ],
+                      if (dynamisedText.isNotEmpty) ...[
+                        ExpandableContentWidget(
+                          title: 'Dynamisation du texte',
+                          content: dynamisedText,
+                          icon: Icons.flash_on,
+                          withPadding: false,
+                        ),
+                        const SizedBox(height: 30),
+                      ],
                     ],
                   ),
                 ),
@@ -176,11 +240,7 @@ class _InstructionWidget extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(
-            Icons.edit_note,
-            size: 40,
-            color: Color(0xFFD2691E),
-          ),
+          const Icon(Icons.edit_note, size: 40, color: Color(0xFFD2691E)),
           const SizedBox(height: 16),
           const Text(
             'Racontez-nous un moment de votre journée',
@@ -222,28 +282,30 @@ class _TextInputWidget extends StatelessWidget {
           decoration: BoxDecoration(
             color: enabled ? Colors.white : Colors.grey,
             borderRadius: BorderRadius.circular(15),
-            boxShadow: enabled ? [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ] : [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 5,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: TextField(
             controller: controller,
             maxLines: 8,
             enabled: enabled,
             decoration: InputDecoration(
-              hintText: enabled 
-                ? 'Décrivez une expérience, une émotion, ou une réflexion. Je vous aiderai à voir les aspects positifs.'
-                : 'Traitement en cours...',
+              hintText: enabled
+                  ? 'Décrivez une expérience, une émotion, ou une réflexion. Je vous aiderai à voir les aspects positifs.'
+                  : 'Traitement en cours...',
               hintStyle: TextStyle(
                 color: enabled ? Colors.grey[500] : Colors.grey[400],
                 fontSize: 16,
@@ -331,11 +393,9 @@ class _EnjolliverButton extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                loading ? CircularProgressIndicator(color: Colors.white) : Icon(
-                  Icons.auto_fix_high,
-                  color: Colors.white,
-                  size: 24,
-                ),
+                loading
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : Icon(Icons.auto_fix_high, color: Colors.white, size: 24),
                 SizedBox(width: 12),
                 Text(
                   loading ? 'Enjolivation en cours...' : 'Enjoliver',
