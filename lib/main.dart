@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:positive_thinker/coach_page.dart';
 import 'package:positive_thinker/pages/positive_news_page.dart';
 import 'package:positive_thinker/pages/better_reading_page.dart';
+import 'package:positive_thinker/pages/writing_improvement_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,6 +21,7 @@ class MyApp extends StatelessWidget {
         "/coach": (context) => SmartCoachAssistantPage(),
         "/positive_news": (context) => const PositiveNewsPage(),
         "/better_reading": (context) => const BetterReadingPage(),
+        "/writing_improvement": (context) => const WritingImprovementPage(),
       },
       debugShowCheckedModeBanner: false,
     );
@@ -95,7 +97,7 @@ class HomePage extends StatelessWidget {
                   description:
                       'Lachez vos messages les plus moches, je les corrigerais',
                   onClick: () {
-                    Navigator.of(context).pushNamed("/coach");
+                    Navigator.of(context).pushNamed("/writing_improvement");
                   },
                 ),
 
