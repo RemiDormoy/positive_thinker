@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:positive_thinker/gemini_nano_service.dart';
 import '../models/guardian_article_detail.dart';
 import '../services/guardian_service.dart';
@@ -20,6 +22,10 @@ class ArticleDetailPage extends StatefulWidget {
 class _ArticleDetailPageState extends State<ArticleDetailPage> {
   PositiveNewsStep step = PositiveNewsStep.LOADING_CONTENT;
   String finalContent = "";
+  String originalContent = "";
+  String originalSummary = "";
+  String firstTranslation = "";
+  GuardianArticleDetail? articleDetail;
   final GeminiNanoService geminiNanoService = GeminiNanoService();
 
   @override
@@ -34,6 +40,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     GuardianService().fetchArticleDetail(widget.apiUrl).then((articles) {
       setState(() {
         step = PositiveNewsStep.SUMMURAZING_CONTENT;
+        articleDetail = articles;
       });
       _summarizeArticles(articles);
     });
@@ -43,6 +50,8 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     debugPrint("Texte complet de l'article : ${article.bodyText}");
     geminiNanoService.summarize(article.bodyText).then((summary) {
       setState(() {
+        originalContent = article.bodyText;
+        originalSummary = summary;
         step = PositiveNewsStep.TRANSLATING;
       });
       _translateArticles(summary);
@@ -56,6 +65,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     geminiNanoService.generateResponse(prompt).then((traduction) {
       setState(() {
         step = PositiveNewsStep.ADDING_GOOD_VIBES;
+        firstTranslation = traduction;
       });
       _injectGoodVibes(traduction);
     });
@@ -65,7 +75,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     debugPrint("Traduction du résumé : $article");
     final prompt =
         """Je voudrais que tu reformule le texte suivant, en trouvant des côtés positifs et en faisant sortir ces côtés positifs de manière très accentuée : $article.
-        Le résultat doit faire moins de 100 mots""";
+        Le résultat doit faire moins de 100 mots et être très positif et enthousiaste""";
     geminiNanoService.generateResponse(prompt).then((tadaaaa) {
       setState(() {
         step = PositiveNewsStep.READY;
@@ -109,18 +119,160 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
             ? _TranslatingWidget()
             : step == PositiveNewsStep.ADDING_GOOD_VIBES
             ? _AddingGoodVibesWidget()
-            : SingleChildScrollView(
-              child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Text(finalContent),
-                    ),
-                  ],
-                ),
-            ),
+            : _Content(
+                finalContent, 
+                articleDetail!, 
+                originalContent, 
+                originalSummary, 
+                firstTranslation,
+              ),
+      ),
+    );
+  }
+}
+
+class _Content extends StatelessWidget {
+  final String content;
+  final GuardianArticleDetail articleDetail;
+  final String originalContent;
+  final String originalSummary;
+  final String firstTranslation;
+
+  const _Content(
+    this.content, 
+    this.articleDetail, 
+    this.originalContent, 
+    this.originalSummary, 
+    this.firstTranslation,
+  );
+
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.platformDefault)) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _ContentWidget(content: content),
+          _LinkWidget(
+            webUrl: articleDetail.webUrl,
+            onLinkTap: () => _launchUrl(articleDetail.webUrl),
+          ),
+          _WarningWidget(),
+          _ExpandableContentWidget(
+            title: 'Contenu original (en anglais)',
+            content: originalContent,
+            icon: Icons.article,
+          ),
+          _ExpandableContentWidget(
+            title: 'Premier résumé',
+            content: originalSummary,
+            icon: Icons.summarize,
+          ),
+          _ExpandableContentWidget(
+            title: 'Première traduction',
+            content: firstTranslation,
+            icon: Icons.translate,
+          ),
+          const SizedBox(height: 30)
+        ],
+      ),
+    );
+  }
+}
+
+class _LinkWidget extends StatelessWidget {
+  final String webUrl;
+  final VoidCallback onLinkTap;
+
+  const _LinkWidget({
+    required this.webUrl,
+    required this.onLinkTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: ElevatedButton.icon(
+        onPressed: onLinkTap,
+        icon: const Icon(Icons.open_in_new, color: Colors.white),
+        label: const Text(
+          'Lire l\'article complet',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF8B4513),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ContentWidget extends StatelessWidget {
+  final String content;
+
+  const _ContentWidget({required this.content});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: MarkdownBody(
+        data: content,
+        styleSheet: MarkdownStyleSheet(
+          p: const TextStyle(
+            fontSize: 16,
+            height: 1.6,
+            color: Color(0xFF2C1810),
+          ),
+          h1: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF8B4513),
+          ),
+          h2: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF8B4513),
+          ),
+          h3: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF8B4513),
+          ),
+          strong: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF8B4513),
+          ),
+          em: const TextStyle(
+            fontStyle: FontStyle.italic,
+            color: Color(0xFF6B4423),
+          ),
+        ),
       ),
     );
   }
@@ -229,6 +381,112 @@ class _AddingGoodVibesWidget extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _WarningWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange, width: 2),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.warning,
+            color: Colors.orange.shade700,
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Attention, les faits sont légèrement modifiés à l\'aide de l\'IA pour leur donner un aspect positif, vérifiez-les sur internet avant de les partager',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.orange.shade800,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExpandableContentWidget extends StatefulWidget {
+  final String title;
+  final String content;
+  final IconData icon;
+
+  const _ExpandableContentWidget({
+    required this.title,
+    required this.content,
+    required this.icon,
+  });
+
+  @override
+  State<_ExpandableContentWidget> createState() => _ExpandableContentWidgetState();
+}
+
+class _ExpandableContentWidgetState extends State<_ExpandableContentWidget> {
+  bool isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 2,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: ExpansionTile(
+        leading: Icon(
+          widget.icon,
+          color: const Color(0xFF8B4513),
+        ),
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF8B4513),
+          ),
+        ),
+        onExpansionChanged: (expanded) {
+          setState(() {
+            isExpanded = expanded;
+          });
+        },
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Text(
+              widget.content.isNotEmpty ? widget.content : 'Contenu vide',
+              style: const TextStyle(
+                fontSize: 14,
+                height: 1.5,
+                color: Color(0xFF2C1810),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
