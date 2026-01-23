@@ -14,6 +14,10 @@ import com.google.mlkit.genai.imagedescription.ImageDescription
 import com.google.mlkit.genai.imagedescription.ImageDescriptionRequest
 import com.google.mlkit.genai.prompt.Generation
 import com.google.mlkit.genai.prompt.GenerativeModel
+import com.google.mlkit.genai.proofreading.Proofreader
+import com.google.mlkit.genai.proofreading.ProofreaderOptions
+import com.google.mlkit.genai.proofreading.Proofreading
+import com.google.mlkit.genai.proofreading.ProofreadingRequest
 import com.google.mlkit.genai.rewriting.Rewriter
 import com.google.mlkit.genai.rewriting.RewriterOptions
 import com.google.mlkit.genai.rewriting.Rewriting
@@ -35,6 +39,7 @@ class MainActivity : FlutterActivity() {
     private lateinit var generativeModel: GenerativeModel
     private lateinit var imageDescriber: ImageDescriber
     private lateinit var summarizer: Summarizer
+    private lateinit var proofreader: Proofreader
     private lateinit var rewriter: Rewriter
     private var modelDownloaded: Boolean = false
     private val CHANNEL = "gemini_nano_service"
@@ -66,6 +71,9 @@ class MainActivity : FlutterActivity() {
             } else if (call.method == "summarize") {
                 val promptString = call.arguments<String>()
                 summarizeContent(promptString!!, result)
+            } else if (call.method == "correct") {
+                val promptString = call.arguments<String>()
+                correctContent(promptString!!, result)
             } else if (call.method == "reformulate") {
                 val promptString = call.arguments<List<String>>()
                 val originalText = promptString!![0]
@@ -93,6 +101,9 @@ class MainActivity : FlutterActivity() {
         }
         if (::rewriter.isInitialized) {
             rewriter.close()
+        }
+        if (::proofreader.isInitialized) {
+            proofreader.close()
         }
     }
 
@@ -129,6 +140,30 @@ class MainActivity : FlutterActivity() {
                         .build()
                     summarizer = Summarization.getClient(summarizerOptions)
                     prepareAndStartSummarization(summarizer, promptString, result)
+                } catch (e: Exception) {
+                    result.error(
+                        "GENERATION_ERROR",
+                        e.message ?: "Failed to generate content",
+                        null
+                    )
+                }
+            }
+        }
+    }
+
+    private fun correctContent(
+        promptString: String,
+        result: MethodChannel.Result
+    ) {
+        lifecycleScope.future {
+            withContext(Dispatchers.IO) {
+                try {
+                    val options = ProofreaderOptions.builder(context)
+                        .setInputType(ProofreaderOptions.InputType.KEYBOARD)
+                        .setLanguage(ProofreaderOptions.Language.FRENCH)
+                        .build()
+                    proofreader = Proofreading.getClient(options)
+                    prepareAndStartProofread(proofreader, promptString, result)
                 } catch (e: Exception) {
                     result.error(
                         "GENERATION_ERROR",
@@ -344,7 +379,48 @@ fun startRewritingRequest(text: String, rewriter: Rewriter, result: MethodChanne
     val returnString = rewriteResults.results[rewriteResults.results.size - 1].text
 
     result.success(returnString)
+}
 
+suspend fun prepareAndStartProofread(
+    proofreader: Proofreader,
+    textToProofread: String,
+    result: MethodChannel.Result
+) {
+    val featureStatus = proofreader.checkFeatureStatus().await()
+
+    if (featureStatus == FeatureStatus.DOWNLOADABLE) {
+        proofreader.downloadFeature(object : DownloadCallback {
+            override fun onDownloadStarted(bytesToDownload: Long) { }
+
+            override fun onDownloadFailed(e: GenAiException) { }
+
+            override fun onDownloadProgress(
+                totalBytesDownloaded: Long
+            ) {}
+
+            override fun onDownloadCompleted() {
+                startProofreadingRequest(textToProofread, proofreader, result)
+            }
+        })
+    } else if (featureStatus == FeatureStatus.DOWNLOADING) {
+        startProofreadingRequest(textToProofread, proofreader, result)
+    } else if (featureStatus == FeatureStatus.AVAILABLE) {
+        startProofreadingRequest(textToProofread, proofreader, result)
+    }
+}
+
+fun startProofreadingRequest(
+    text: String, proofreader: Proofreader, result: MethodChannel.Result
+) {
+    // Create task request
+    val proofreadingRequest =
+        ProofreadingRequest.builder(text).build()
+
+    val proofreadingResults =
+        proofreader.runInference(proofreadingRequest).get().results
+    val returnString = proofreadingResults[proofreadingResults.size - 1].text
+
+    result.success(returnString)
 }
 
 suspend fun prepareAndStartRewrite(
