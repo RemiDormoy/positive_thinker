@@ -25,6 +25,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
   String originalContent = "";
   String originalSummary = "";
   String firstTranslation = "";
+  String beforeEmoji = "";
   GuardianArticleDetail? articleDetail;
   final GeminiNanoService geminiNanoService = GeminiNanoService();
 
@@ -79,8 +80,18 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         Le résultat doit faire moins de 100 mots et être super enthousiaste""";
     geminiNanoService.generateResponse(prompt).then((tadaaaa) {
       setState(() {
+        step = PositiveNewsStep.EMOJIFICATION;
+        beforeEmoji = tadaaaa;
+      });
+      _injectEmojis(tadaaaa);
+    });
+  }
+
+  _injectEmojis(String tadaa) {
+    geminiNanoService.reformulate(tadaa, GeminiReformulate.EMOJIFY).then((emojis) {
+      setState(() {
         step = PositiveNewsStep.READY;
-        finalContent = tadaaaa;
+        finalContent = emojis;
       });
     });
   }
@@ -118,6 +129,8 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
             ? _LoadingSummarizedContent()
             : step == PositiveNewsStep.TRANSLATING
             ? _TranslatingWidget()
+            : step == PositiveNewsStep.EMOJIFICATION
+            ? _EmojificationWidget()
             : step == PositiveNewsStep.ADDING_GOOD_VIBES
             ? _AddingGoodVibesWidget()
             : _Content(
@@ -126,6 +139,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                 originalContent, 
                 originalSummary, 
                 firstTranslation,
+                beforeEmoji,
               ),
       ),
     );
@@ -138,6 +152,7 @@ class _Content extends StatelessWidget {
   final String originalContent;
   final String originalSummary;
   final String firstTranslation;
+  final String beforeEmoji;
 
   const _Content(
     this.content, 
@@ -145,6 +160,7 @@ class _Content extends StatelessWidget {
     this.originalContent, 
     this.originalSummary, 
     this.firstTranslation,
+    this.beforeEmoji,
   );
 
   Future<void> _launchUrl(String url) async {
@@ -181,6 +197,11 @@ class _Content extends StatelessWidget {
             title: 'Première traduction',
             content: firstTranslation,
             icon: Icons.translate,
+          ),
+          ExpandableContentWidget(
+            title: 'Ajout des bonnes ondes',
+            content: beforeEmoji,
+            icon: Icons.sunny,
           ),
           const SizedBox(height: 30)
         ],
@@ -360,6 +381,33 @@ class _TranslatingWidget extends StatelessWidget {
   }
 }
 
+class _EmojificationWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Color(0xFF8B4513)),
+            SizedBox(height: 16),
+            Text(
+              "Pose de la touche finale !",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF8B4513),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _AddingGoodVibesWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -500,5 +548,6 @@ enum PositiveNewsStep {
   SUMMURAZING_CONTENT,
   TRANSLATING,
   ADDING_GOOD_VIBES,
+  EMOJIFICATION,
   READY,
 }
