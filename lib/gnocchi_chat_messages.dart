@@ -87,9 +87,15 @@ class _MessageWidget extends StatelessWidget {
 class _UserAvatarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(200),
-      child: Image.asset('images/user_chat.png', height: 80, width: 80),
+    return Container(
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(200),
+          border: Border.all(color: Color(0xFF5D4037))
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(200),
+        child: Image.asset('images/user_chat.png', height: 80, width: 80),
+      ),
     );
   }
 }
@@ -98,13 +104,19 @@ class _UserAvatarWidget extends StatelessWidget {
 class _AssistantAvatarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(200),
-      child: Image.asset(
-        'images/coach_gnocchi.png',
-        fit: BoxFit.fitHeight,
-        height: 80,
-        width: 80,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(200),
+        border: Border.all(color: Color(0xFF5D4037))
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(200),
+        child: Image.asset(
+          'images/coach_gnocchi.png',
+          fit: BoxFit.fitHeight,
+          height: 80,
+          width: 80,
+        ),
       ),
     );
   }
@@ -120,7 +132,15 @@ class _UserMessageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.deepPurple,
+        border: Border.all(color: Color(0xFF8B4513)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF8B4513),
+            Color(0xFF5D4037),
+          ],
+        ),
         borderRadius: BorderRadius.circular(18.0),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
@@ -163,13 +183,32 @@ class _AssistantMessageWidget extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        border: Border.all(color: Colors.white),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white, // Crème/beige clair
+            const Color(0xFFF5E6D3), // Crème/beige clair
+          ],
+        ),
         borderRadius: BorderRadius.circular(18.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 4.0,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       child: Text(
         message.text,
-        style: const TextStyle(color: Colors.black87, fontSize: 16.0),
+        style: const TextStyle(
+          color: Color(0xFF5D4037), // Marron chaleureux
+          fontSize: 16.0,
+          height: 1.4,
+        ),
       ),
     );
   }
@@ -205,17 +244,31 @@ class _TypingIndicatorWidgetState extends State<_TypingIndicatorWidget>
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFFF5E6D3).withValues(alpha: 0.7), // Crème/beige plus transparent
+            const Color(0xFFE8B4A0).withValues(alpha: 0.5), // Orange/pêche plus transparent
+          ],
+        ),
         borderRadius: BorderRadius.circular(18.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 4.0,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
             'Coach Gnocchi écrit',
             style: TextStyle(
-              color: Colors.black54,
+              color: Color(0xFF5D4037), // Marron chaleureux
               fontSize: 16.0,
               fontStyle: FontStyle.italic,
             ),
@@ -227,8 +280,8 @@ class _TypingIndicatorWidgetState extends State<_TypingIndicatorWidget>
               return Text(
                 '...',
                 style: TextStyle(
-                  color: Colors.black54.withValues(
-                    alpha: _animationController.value,
+                  color: const Color(0xFF5D4037).withValues(
+                    alpha: 0.5 + (_animationController.value * 0.5),
                   ),
                   fontSize: 16.0,
                 ),
@@ -236,6 +289,61 @@ class _TypingIndicatorWidgetState extends State<_TypingIndicatorWidget>
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Widget privé pour les boutons stylisés de la barre de saisie
+class _StyledIconButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final IconData icon;
+  final bool isEnabled;
+  final String? tooltip;
+
+  const _StyledIconButton({
+    required this.onPressed,
+    required this.icon,
+    required this.isEnabled,
+    this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: isEnabled
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFF5E6D3).withValues(alpha: 0.2),
+                  const Color(0xFF8B4513).withValues(alpha: 0.4),
+                ],
+              )
+            : null,
+        color: isEnabled ? null : Colors.grey.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+        border: Border.all(color: Color(0xFF8B4513)),
+        boxShadow: isEnabled
+            ? [
+                BoxShadow(
+                  color: Colors.deepPurple.withValues(alpha: 0.2),
+                  blurRadius: 4.0,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
+      ),
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Icon(
+          icon,
+          color: isEnabled ? Color(0xFF8B4513) : Colors.grey,
+          size: 24.0,
+        ),
+        tooltip: tooltip,
+        splashRadius: 24.0,
       ),
     );
   }
@@ -260,11 +368,18 @@ class _ChatInputWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFFFDF8F3), // Blanc crème très léger
+            const Color(0xFFF5E6D3), // Crème/beige clair
+          ],
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade300,
-            blurRadius: 4.0,
+            color: const Color(0xFFE8B4A0).withValues(alpha: 0.3),
+            blurRadius: 8.0,
             offset: const Offset(0, -2),
           ),
         ],
@@ -280,13 +395,37 @@ class _ChatInputWidget extends StatelessWidget {
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
                   hintText: 'Écrit à gnogno',
+                  hintStyle: TextStyle(
+                    color: const Color(0xFF5D4037).withValues(alpha: 0.6),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withValues(alpha: 0.8),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24.0),
+                    borderSide: BorderSide(
+                      color: const Color(0xFFE8B4A0).withValues(alpha: 0.5),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0),
+                    borderSide: BorderSide(
+                      color: const Color(0xFFE8B4A0).withValues(alpha: 0.5),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF8B4513),
+                      width: 2.0,
+                    ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
                     vertical: 12.0,
                   ),
+                ),
+                style: const TextStyle(
+                  color: Color(0xFF5D4037),
                 ),
                 onSubmitted: (text) {
                   if (!isGenerating) {
@@ -295,24 +434,21 @@ class _ChatInputWidget extends StatelessWidget {
                 },
               ),
             ),
-            const SizedBox(width: 8.0),
-            IconButton(
+            const SizedBox(width: 12.0),
+            _StyledIconButton(
               onPressed: isGenerating ? null : onImageTap,
-              icon: Icon(
-                Icons.image,
-                color: isGenerating ? Colors.grey : Colors.deepPurple,
-              ),
+              icon: Icons.image,
+              isEnabled: !isGenerating,
               tooltip: 'Ajouter une image',
             ),
             const SizedBox(width: 8.0),
-            IconButton(
+            _StyledIconButton(
               onPressed: isGenerating
                   ? null
                   : () => onSendMessage(controller.text),
-              icon: Icon(
-                Icons.send,
-                color: isGenerating ? Colors.grey : Colors.deepPurple,
-              ),
+              icon: Icons.send,
+              isEnabled: !isGenerating,
+              tooltip: 'Envoyer',
             ),
           ],
         ),

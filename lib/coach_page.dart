@@ -54,10 +54,18 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Coach Gnocchi'),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
+      appBar:
+      AppBar(
+        title: Text(
+          "Coach Gnocchi",
+          style: const TextStyle(
+            color: Color(0xFF8B4513),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: const Color(0xFFF5E6D3),
+        iconTheme: const IconThemeData(color: Color(0xFF8B4513)),
+        elevation: 0,
       ),
       body: Column(
         mainAxisSize: MainAxisSize.max,
