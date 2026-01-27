@@ -47,11 +47,12 @@ class GeminiNanoService {
     // Vérifier si nous sommes sur Android
     if (Platform.isAndroid) {
       try {
+        debugPrint('début de l\'analyse de l\'image');
         final String imageResult = await _channel.invokeMethod('imageDescription', input.path);
         debugPrint('imageResult : $imageResult');
-        final finalPrompt = """Image que je t'envoie l'image avec la description suivante : $imageResult.
-        Tu es chien qui doit me faire voir la vie en positif.
-        Je veux que tu me redécrive, en tant que chien qui parle français, en moins de 100 mots, l'image de manière beaucoup plus positive. 
+        final finalPrompt = """Imagine que je t'envoie l'image avec la description suivante : $imageResult.
+        Tu es un chien qui doit me faire voir la vie en positif.
+        Je veux que tu me la redécrive, en tant que chien qui parle français, en moins de 100 mots, et de manière beaucoup plus positive. 
         """;
         final String result = await generateResponse(finalPrompt);
         return result;

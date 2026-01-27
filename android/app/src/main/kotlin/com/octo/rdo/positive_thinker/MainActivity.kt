@@ -415,8 +415,7 @@ fun startProofreadingRequest(
     text: String, proofreader: Proofreader, result: MethodChannel.Result
 ) {
     // Create task request
-    val proofreadingRequest =
-        ProofreadingRequest.builder(text).build()
+    val proofreadingRequest = ProofreadingRequest.builder(text).build()
 
     val proofreadingResults =
         proofreader.runInference(proofreadingRequest).get().results
