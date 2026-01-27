@@ -3,6 +3,7 @@ class GeminiNanoWebService {
   constructor() {
     this.isInitialized = false;
     this.apiKey = null;
+    this.session = null; // Variable pour stocker la session
     
     // Vous devrez configurer votre clé API Gemini ici
     // ou la récupérer depuis les variables d'environnement
@@ -11,30 +12,33 @@ class GeminiNanoWebService {
 
   async initialize(apiKey = null) {
     try {
-      // Si une clé API est fournie, l'utiliser
-      if (apiKey) {
-        this.apiKey = apiKey;
-      }
-      
-      // Pour le moment, on simule l'initialisation
-      // Dans une vraie implémentation, vous pourriez vérifier la validité de la clé API
+      // Appel de l'API native web LanguageModel.create
+      this.session = await LanguageModel.create({});
       this.isInitialized = true;
+      console.log('Session Gemini Nano créée avec succès');
       return true;
     } catch (error) {
       console.error('Erreur lors de l\'initialisation:', error);
       this.isInitialized = false;
+      this.session = null;
       return false;
     }
   }
 
   async callGeminiAPI(prompt, model = 'gemini-pro') {
-    if (!this.isInitialized) {
+    if (!this.isInitialized || !this.session) {
       throw new Error('Service non initialisé');
     }
 
-    // Pour le développement, on retourne des réponses simulées
-    // En production, vous devriez implémenter les vrais appels API
-    return await this.simulateGeminiResponse(prompt);
+    try {
+      // Utilise la session native Gemini Nano
+      const response = await this.session.prompt(prompt);
+      return response;
+    } catch (error) {
+      console.error('Erreur lors de l\'appel à Gemini Nano:', error);
+      // Fallback vers les réponses simulées en cas d'erreur
+      return await this.simulateGeminiResponse(prompt);
+    }
   }
 
   async simulateGeminiResponse(prompt) {
@@ -63,7 +67,12 @@ class GeminiNanoWebService {
 
   async prompt(input) {
     try {
-      const response = await this.callGeminiAPI(input);
+      if (!this.session) {
+        throw new Error('Session non initialisée');
+      }
+      
+      // Utilise la session native pour générer la réponse
+      const response = await this.session.prompt(input);
       return response;
     } catch (error) {
       console.error('Erreur lors du prompt:', error);
