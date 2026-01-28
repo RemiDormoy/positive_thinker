@@ -13,7 +13,14 @@ class GeminiNanoWebService {
   async initialize(apiKey = null) {
     try {
       // Appel de l'API native web LanguageModel.create
-      this.session = await LanguageModel.create({});
+      this.session = await LanguageModel.create({
+        expectedInputs: [
+          { type: "text", languages: ["en"] },
+          { type: "audio" },
+          { type: "image" },
+        ],
+        expectedOutputs: [{ type: "text", languages: ["en"] }],
+      });
       this.isInitialized = true;
       console.log('Session Gemini Nano créée avec succès');
       return true;
@@ -96,10 +103,22 @@ class GeminiNanoWebService {
       // Pour le web, nous aurions besoin d'une approche différente pour les images
       // Comme utiliser FileReader pour lire l'image ou un service d'analyse d'image
       console.log('Analyse d\'image demandée pour:', imagePath);
+      const referenceImage = await (await fetch(imagePath)).blob();
       
-      // Simulation d'analyse d'image
-      const description = 'Une belle image colorée avec des éléments positifs et joyeux. Les couleurs sont vives et l\'ambiance générale est très agréable.';
-      return description;
+      const response = await this.session.prompt([
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              value: "Describe the following image in around 20 words",
+            },
+            { type: "image", value: referenceImage },
+          ],
+        },
+      ]);
+
+      return response;
     } catch (error) {
       console.error('Erreur lors de l\'analyse d\'image:', error);
       return 'Je ne suis pas disponible sur ce device';
