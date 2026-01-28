@@ -126,7 +126,7 @@ class ActivateNanoPage extends StatelessWidget {
                   title: 'Activer le flag Prompt API for Gemini Nano with Multimodal Input',
                   description: 'Sélectionnez "Enabled"',
                   actionText: 'Ouvrir le flag',
-                  chromeUrl: 'chrome://flags/#summarization-api-for-gemini-nano',
+                  chromeUrl: 'chrome://flags/#prompt-api-for-gemini-nano-multimodal-input',
                   additionalSteps: [],
                 ),
 
@@ -142,6 +142,25 @@ class ActivateNanoPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 _InstructionStepWidget(
                   stepNumber: 12,
+                  title: "Essayez d'utiliser le modèle depuis la console",
+                  description:
+                      'Ça ne marchera pas mais ça déclenchera le téléchargement du modèle',
+                  actionText: 'Activez le modèle',
+                  isCodeStep: true,
+                  chromeUrl: """
+await LanguageModel.create({
+  monitor(m) {
+    m.addEventListener("downloadprogress", e => {
+      console.log(`Downloaded \${e.loaded * 100}%`);
+    });
+  }
+});
+                  """,
+                  additionalSteps: [],
+                ),
+                const SizedBox(height: 20),
+                _InstructionStepWidget(
+                  stepNumber: 13,
                   title: 'Forcer le téléchargement du modèle',
                   description:
                       'Clickez sur "Rechercher des mises à jour" pour "Optimization Guide On Device Model"',
@@ -155,7 +174,7 @@ class ActivateNanoPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 _InstructionStepWidget(
-                  stepNumber: 13,
+                  stepNumber: 14,
                   title: 'Attendez la fin du téléchargement',
                   description:
                   'Cela peut prendre entre 5 et 10 minutes',
@@ -166,16 +185,16 @@ class ActivateNanoPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 _InstructionStepWidget(
-                  stepNumber: 14,
+                  stepNumber: 15,
                   title: 'Vérifier l\'activation',
                   description:
                       'Testez si Gemini Nano est disponible dans la console',
                   actionText: 'Tester maintenant',
-                  chromeUrl: 'await LanguageModel.capabilities()',
+                  chromeUrl: 'await LanguageModel.availability()',
                   isCodeStep: true,
                   additionalSteps: [
                     'Ouvrez la console développeur (F12)',
-                    'Tapez : await LanguageModel.capabilities()',
+                    'Tapez : await LanguageModel.availability()',
                     'Si "available": "readily" s\'affiche, c\'est activé !',
                   ],
                 ),
