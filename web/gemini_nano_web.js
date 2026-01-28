@@ -137,27 +137,20 @@ class GeminiNanoWebService {
   }
 
   async reformulate(input, type) {
-    try {
-      let prompt;
-      switch (type) {
-        case 'DYNAMISE':
-          prompt = `Reformule ce texte de manière plus dynamique et énergique : ${input}`;
-          break;
-        case 'EMOJIFY':
-          prompt = `Ajoute des emojis appropriés à ce texte : ${input}`;
-          break;
-        case 'REFORMULATE':
-          prompt = `Reformule ce texte de manière plus claire : ${input}`;
-          break;
-        case 'DEVELOP':
-          prompt = `Développe et enrichis ce texte : ${input}`;
-          break;
-        default:
-          prompt = `Reformule ce texte : ${input}`;
-      }
-      
-      const response = await this.callGeminiAPI(prompt);
-      return response;
+  try {
+      console.log('Reformulation demandée:', input, type);
+      const options = {
+        sharedContext: 'This is an email to acquaintances about an upcoming event.',
+        tone: 'more-casual',
+        format: 'plain-text',
+        length: type === 'DEVELOP' ? 'longer' : 'as-is',
+      };
+      const rewriter = await Rewriter.create(options);
+      const result = await rewriter.rewrite(input, {
+      context: "Je voudrais que le retour soit en français"
+      });
+      console.log(result);
+      return result;
     } catch (error) {
       console.error('Erreur lors de la reformulation:', error);
       return 'Je ne suis pas disponible sur ce device';
@@ -166,9 +159,10 @@ class GeminiNanoWebService {
 
   async correct(input) {
     try {
-      const prompt = `Corrige les erreurs de grammaire et d'orthographe dans ce texte français : ${input}`;
-      const response = await this.callGeminiAPI(prompt);
-      return response;
+      const proofreader = await Proofreader.create({});
+      const proofreadResult = await proofreader.proofread(input);
+      console.log('Correction du texte:', proofreadResult);
+      return proofreadResult.correctedInput;
     } catch (error) {
       console.error('Erreur lors de la correction:', error);
       return 'Je ne suis pas disponible sur ce device';
