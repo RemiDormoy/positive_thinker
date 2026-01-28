@@ -89,9 +89,20 @@ class GeminiNanoWebService {
 
   async summarize(input) {
     try {
-      const prompt = `Résume le texte suivant en français : ${input}`;
-      const response = await this.callGeminiAPI(prompt);
-      return response;
+      const options = {
+        sharedContext: 'This is an article',
+        type: 'key-points',
+        format: 'markdown',
+        length: 'short',
+        monitor(m) {
+          m.addEventListener('downloadprogress', (e) => {
+            console.log(`Downloaded ${e.loaded * 100}%`);
+          });
+        }
+      };
+      const summarizer = await Summarizer.create(options);
+      const summary = await summarizer.summarize(input);
+      return summary;
     } catch (error) {
       console.error('Erreur lors du résumé:', error);
       return 'Je ne suis pas disponible sur ce device';
