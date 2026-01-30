@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import FoundationModels
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -27,31 +28,51 @@ import UIKit
       handleInitialize(result: result)
     case "prompt":
       if let input = call.arguments as? String {
-        handlePrompt(input: input, result: result)
+        if #available(iOS 26.0, *) {
+          handlePrompt(input: input, result: result)
+        } else {
+          result(FlutterError(code: "iOS_VERSION_NOT_SUPPORTED", message: "iOS 26.0 ou plus récent requis pour Apple Foundation Models", details: nil))
+        }
       } else {
         result(FlutterError(code: "INVALID_ARGUMENTS", message: "Expected String input", details: nil))
       }
     case "summarize":
       if let input = call.arguments as? String {
-        handleSummarize(input: input, result: result)
+        if #available(iOS 26.0, *) {
+          handleSummarize(input: input, result: result)
+        } else {
+          result(FlutterError(code: "iOS_VERSION_NOT_SUPPORTED", message: "iOS 26.0 ou plus récent requis pour Apple Foundation Models", details: nil))
+        }
       } else {
         result(FlutterError(code: "INVALID_ARGUMENTS", message: "Expected String input", details: nil))
       }
     case "imageDescription":
       if let imagePath = call.arguments as? String {
-        handleImageDescription(imagePath: imagePath, result: result)
+        if #available(iOS 26.0, *) {
+          handleImageDescription(imagePath: imagePath, result: result)
+        } else {
+          result(FlutterError(code: "iOS_VERSION_NOT_SUPPORTED", message: "iOS 26.0 ou plus récent requis pour Apple Foundation Models", details: nil))
+        }
       } else {
         result(FlutterError(code: "INVALID_ARGUMENTS", message: "Expected String image path", details: nil))
       }
     case "reformulate":
       if let arguments = call.arguments as? [String], arguments.count >= 2 {
-        handleReformulate(input: arguments[0], type: arguments[1], result: result)
+        if #available(iOS 26.0, *) {
+          handleReformulate(input: arguments[0], type: arguments[1], result: result)
+        } else {
+          result(FlutterError(code: "iOS_VERSION_NOT_SUPPORTED", message: "iOS 26.0 ou plus récent requis pour Apple Foundation Models", details: nil))
+        }
       } else {
         result(FlutterError(code: "INVALID_ARGUMENTS", message: "Expected [String, String] arguments", details: nil))
       }
     case "correct":
       if let input = call.arguments as? String {
-        handleCorrect(input: input, result: result)
+        if #available(iOS 26.0, *) {
+          handleCorrect(input: input, result: result)
+        } else {
+          result(FlutterError(code: "iOS_VERSION_NOT_SUPPORTED", message: "iOS 26.0 ou plus récent requis pour Apple Foundation Models", details: nil))
+        }
       } else {
         result(FlutterError(code: "INVALID_ARGUMENTS", message: "Expected String input", details: nil))
       }
@@ -61,63 +82,177 @@ import UIKit
   }
   
   private func handleInitialize(result: @escaping FlutterResult) {
-    // Pour l'instant, on considère que l'initialisation est réussie sur iOS
-    // Dans une vraie implémentation, ici on initialiserait le service Gemini
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-      result(nil)
-    }
-  }
-  
-  private func handlePrompt(input: String, result: @escaping FlutterResult) {
-    // Simulation d'une réponse Gemini pour iOS
-    // Dans une vraie implémentation, ici on appellerait le service Gemini
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-      let mockResponse = "🐕 Woof! Je suis votre assistant positif sur iOS! Voici ma réponse optimiste à: \(input)"
-      result(mockResponse)
-    }
-  }
-  
-  private func handleSummarize(input: String, result: @escaping FlutterResult) {
-    // Simulation d'un résumé pour iOS
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-      let mockSummary = "📝 Résumé iOS: \(String(input.prefix(50)))..."
-      result(mockSummary)
-    }
-  }
-  
-  private func handleImageDescription(imagePath: String, result: @escaping FlutterResult) {
-    // Simulation d'une description d'image pour iOS
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-      let mockDescription = "🖼️ Description iOS: Cette image montre quelque chose de merveilleux et inspirant!"
-      result(mockDescription)
-    }
-  }
-  
-  private func handleReformulate(input: String, type: String, result: @escaping FlutterResult) {
-    // Simulation de reformulation pour iOS
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-      var mockResult = ""
-      switch type {
-      case "DYNAMISE":
-        mockResult = "⚡️ Version dynamique iOS: \(input)!"
-      case "EMOJIFY":
-        mockResult = "😊 Version avec emojis iOS: \(input) 🎉"
-      case "REFORMULATE":
-        mockResult = "🔄 Reformulation iOS: \(input)"
-      case "DEVELOP":
-        mockResult = "📖 Version développée iOS: \(input) avec plus de détails et d'explications."
-      default:
-        mockResult = "🤔 Type non reconnu: \(input)"
+    // Vérifier la disponibilité d'iOS 26.0 et du modèle Apple Intelligence
+    if #available(iOS 26.0, *) {
+      let model = SystemLanguageModel.default
+      switch model.availability {
+      case .available:
+        result(nil) // Succès
+      case .unavailable(.appleIntelligenceNotEnabled):
+        result(FlutterError(code: "AI_NOT_ENABLED", message: "Apple Intelligence n'est pas activé dans les réglages", details: nil))
+      case .unavailable(.modelNotReady):
+        result(FlutterError(code: "MODEL_NOT_READY", message: "Le modèle n'est pas encore prêt (téléchargement en cours)", details: nil))
+      case .unavailable(let other):
+        result(FlutterError(code: "MODEL_UNAVAILABLE", message: "Modèle non disponible: \(other)", details: nil))
       }
-      result(mockResult)
+    } else {
+      result(FlutterError(code: "iOS_VERSION_NOT_SUPPORTED", message: "iOS 26.0 ou plus récent requis pour Apple Foundation Models", details: nil))
     }
   }
   
+  @available(iOS 26.0, *)
+  private func handlePrompt(input: String, result: @escaping FlutterResult) {
+    Task {
+      do {
+        let model = SystemLanguageModel.default
+        guard model.availability == .available else {
+          result(FlutterError(code: "MODEL_UNAVAILABLE", message: "Modèle non disponible", details: nil))
+          return
+        }
+        
+        let session = LanguageModelSession()
+        let instructions = "Tu es un chien positif et bienveillant qui aide les utilisateurs à voir la vie du bon côté. Réponds toujours de manière optimiste et encourageante, en français, et avec de la personnalité canine."
+        
+        let fullPrompt = "\(instructions)\n\nUtilisateur: \(input)"
+        let response = try await session.respond(to: fullPrompt)
+        
+        DispatchQueue.main.async {
+          result(response)
+        }
+      } catch {
+        DispatchQueue.main.async {
+          result(FlutterError(code: "GENERATION_ERROR", message: "Erreur lors de la génération: \(error.localizedDescription)", details: nil))
+        }
+      }
+    }
+  }
+  
+  @available(iOS 26.0, *)
+  private func handleSummarize(input: String, result: @escaping FlutterResult) {
+    Task {
+      do {
+        let model = SystemLanguageModel.default
+        guard model.availability == .available else {
+          result(FlutterError(code: "MODEL_UNAVAILABLE", message: "Modèle non disponible", details: nil))
+          return
+        }
+        
+        let session = LanguageModelSession()
+        let instructions = "Tu es un assistant qui résume les textes de manière concise et positive. Fais ressortir les aspects positifs du texte dans ton résumé."
+        
+        let fullPrompt = "\(instructions)\n\nRésume ce texte en français: \(input)"
+        let response = try await session.respond(to: fullPrompt)
+        
+        DispatchQueue.main.async {
+          result(response)
+        }
+      } catch {
+        DispatchQueue.main.async {
+          result(FlutterError(code: "SUMMARIZE_ERROR", message: "Erreur lors du résumé: \(error.localizedDescription)", details: nil))
+        }
+      }
+    }
+  }
+  
+  @available(iOS 26.0, *)
+  private func handleImageDescription(imagePath: String, result: @escaping FlutterResult) {
+    Task {
+      do {
+        let model = SystemLanguageModel.default
+        guard model.availability == .available else {
+          result(FlutterError(code: "MODEL_UNAVAILABLE", message: "Modèle non disponible", details: nil))
+          return
+        }
+        
+        // Note: Apple Foundation Models ne supporte pas directement l'analyse d'images
+        // Pour une vraie implémentation, il faudrait utiliser Vision Framework + Foundation Models
+        let session = LanguageModelSession()
+        let instructions = "Génère une description positive et inspirante d'une image basée sur le chemin fourni."
+        
+        let fullPrompt = "\(instructions)\n\nDécris de manière positive une image située à: \(imagePath)"
+        let response = try await session.respond(to: fullPrompt)
+        
+        DispatchQueue.main.async {
+          result(response)
+        }
+      } catch {
+        DispatchQueue.main.async {
+          result(FlutterError(code: "IMAGE_ANALYSIS_ERROR", message: "Erreur lors de l'analyse d'image: \(error.localizedDescription)", details: nil))
+        }
+      }
+    }
+  }
+  
+  @available(iOS 26.0, *)
+  private func handleReformulate(input: String, type: String, result: @escaping FlutterResult) {
+    Task {
+      do {
+        let model = SystemLanguageModel.default
+        guard model.availability == .available else {
+          result(FlutterError(code: "MODEL_UNAVAILABLE", message: "Modèle non disponible", details: nil))
+          return
+        }
+        
+        let session = LanguageModelSession()
+        var prompt = ""
+        var instructions = ""
+        
+        switch type {
+        case "DYNAMISE":
+          prompt = "Reformule ce texte de manière plus dynamique et énergique: \(input)"
+          instructions = "Transforme le texte en version plus énergique et motivante, en gardant le sens original."
+        case "EMOJIFY":
+          prompt = "Ajoute des emojis appropriés à ce texte: \(input)"
+          instructions = "Ajoute des emojis pertinents pour enrichir le texte sans en changer le sens."
+        case "REFORMULATE":
+          prompt = "Reformule ce texte différemment: \(input)"
+          instructions = "Réécris le texte avec des mots différents mais en gardant exactement le même sens."
+        case "DEVELOP":
+          prompt = "Développe et enrichis ce texte: \(input)"
+          instructions = "Développe le texte en ajoutant des détails pertinents et des explications supplémentaires."
+        default:
+          prompt = "Reformule ce texte: \(input)"
+          instructions = "Reformule le texte de manière claire et positive."
+        }
+        
+        let fullPrompt = "\(instructions)\n\n\(prompt)"
+        let response = try await session.respond(to: fullPrompt)
+        
+        DispatchQueue.main.async {
+          result(response)
+        }
+      } catch {
+        DispatchQueue.main.async {
+          result(FlutterError(code: "REFORMULATE_ERROR", message: "Erreur lors de la reformulation: \(error.localizedDescription)", details: nil))
+        }
+      }
+    }
+  }
+  
+  @available(iOS 26.0, *)
   private func handleCorrect(input: String, result: @escaping FlutterResult) {
-    // Simulation de correction pour iOS
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-      let mockCorrection = "✅ Correction iOS: \(input) (version corrigée)"
-      result(mockCorrection)
+    Task {
+      do {
+        let model = SystemLanguageModel.default
+        guard model.availability == .available else {
+          result(FlutterError(code: "MODEL_UNAVAILABLE", message: "Modèle non disponible", details: nil))
+          return
+        }
+        
+        let session = LanguageModelSession()
+        let instructions = "Corrige les erreurs d'orthographe, de grammaire et de syntaxe dans le texte. Retourne uniquement le texte corrigé, sans commentaires supplémentaires."
+        
+        let fullPrompt = "\(instructions)\n\nCorrige ce texte en français: \(input)"
+        let response = try await session.respond(to: fullPrompt)
+        
+        DispatchQueue.main.async {
+          result(response)
+        }
+      } catch {
+        DispatchQueue.main.async {
+          result(FlutterError(code: "CORRECTION_ERROR", message: "Erreur lors de la correction: \(error.localizedDescription)", details: nil))
+        }
+      }
     }
   }
 }
