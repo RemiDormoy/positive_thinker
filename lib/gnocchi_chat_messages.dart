@@ -396,7 +396,8 @@ class _ChatInputWidget extends StatelessWidget {
               child: TextField(
                 controller: controller,
                 enabled: !isGenerating,
-                maxLines: null,
+                maxLines: 1,
+                textInputAction: TextInputAction.send,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
                   hintText: 'Écrit à gnogno',
@@ -431,8 +432,8 @@ class _ChatInputWidget extends StatelessWidget {
                 ),
                 style: const TextStyle(color: Color(0xFF5D4037)),
                 onSubmitted: (text) {
-                  if (!isGenerating) {
-                    onSendMessage(text);
+                  if (!isGenerating && text.trim().isNotEmpty) {
+                    onSendMessage(text.trim());
                   }
                 },
               ),

@@ -84,16 +84,27 @@ import FoundationModels
   private func handleInitialize(result: @escaping FlutterResult) {
     // Vérifier la disponibilité d'iOS 26.0 et du modèle Apple Intelligence
     if #available(iOS 26.0, *) {
-      let model = SystemLanguageModel.default
-      switch model.availability {
-      case .available:
-        result(nil) // Succès
-      case .unavailable(.appleIntelligenceNotEnabled):
-        result(FlutterError(code: "AI_NOT_ENABLED", message: "Apple Intelligence n'est pas activé dans les réglages", details: nil))
-      case .unavailable(.modelNotReady):
-        result(FlutterError(code: "MODEL_NOT_READY", message: "Le modèle n'est pas encore prêt (téléchargement en cours)", details: nil))
-      case .unavailable(let other):
-        result(FlutterError(code: "MODEL_UNAVAILABLE", message: "Modèle non disponible: \(other)", details: nil))
+      do {
+        let model = SystemLanguageModel.default
+        print("DEBUG: SystemLanguageModel obtenu, vérification de l'availability...")
+        
+        switch model.availability {
+        case .available:
+          print("DEBUG: Modèle disponible!")
+          result(nil) // Succès
+        case .unavailable(.appleIntelligenceNotEnabled):
+          print("DEBUG: Apple Intelligence n'est pas activé")
+          result(FlutterError(code: "AI_NOT_ENABLED", message: "Apple Intelligence n'est pas activé dans les réglages. Allez dans Réglages > Apple Intelligence & Siri pour l'activer.", details: nil))
+        case .unavailable(.modelNotReady):
+          print("DEBUG: Modèle en cours de téléchargement")
+          result(FlutterError(code: "MODEL_NOT_READY", message: "Le modèle n'est pas encore prêt (téléchargement en cours). Veuillez patienter quelques minutes.", details: nil))
+        case .unavailable(let other):
+          print("DEBUG: Modèle non disponible pour une autre raison: \(other)")
+          result(FlutterError(code: "MODEL_UNAVAILABLE", message: "Modèle non disponible. Détails: \(other). Vérifiez que vous êtes sur un appareil compatible avec Apple Intelligence et que la fonction est activée dans les réglages.", details: ["reason": "\(other)"]))
+        }
+      } catch {
+        print("DEBUG: Erreur lors de l'accès au modèle: \(error)")
+        result(FlutterError(code: "MODEL_ACCESS_ERROR", message: "Erreur lors de l'accès au modèle: \(error.localizedDescription)", details: nil))
       }
     } else {
       result(FlutterError(code: "iOS_VERSION_NOT_SUPPORTED", message: "iOS 26.0 ou plus récent requis pour Apple Foundation Models", details: nil))

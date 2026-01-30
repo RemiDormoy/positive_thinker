@@ -53,6 +53,7 @@ class GeminiNanoService {
         await _channel.invokeMethod('initialize');
         return true;
       } catch (e) {
+        debugPrint('Erreur initialisation: $e');
         return false;
       }
   }
