@@ -126,9 +126,10 @@ import FoundationModels
         
         let fullPrompt = "\(instructions)\n\nUtilisateur: \(input)"
         let response = try await session.respond(to: fullPrompt)
+          print(response.content)
         
         DispatchQueue.main.async {
-          result(response)
+            result(response.content)
         }
       } catch {
         DispatchQueue.main.async {
