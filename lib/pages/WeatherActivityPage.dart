@@ -14,6 +14,8 @@ class WeatherActivityPage extends StatefulWidget {
 class _WeatherActivityPageState extends State<WeatherActivityPage> {
   final WeatherService _weatherService = WeatherService();
   Future<WeatherData>? _weatherFuture;
+  bool _isEditingWeather = false;
+  WeatherData? _customWeatherData;
 
   @override
   void initState() {
@@ -24,7 +26,45 @@ class _WeatherActivityPageState extends State<WeatherActivityPage> {
   void _refreshWeather() {
     setState(() {
       _weatherFuture = _weatherService.fetchWeatherData();
+      _customWeatherData = null;
     });
+  }
+
+  void _toggleWeatherEdit() {
+    setState(() {
+      _isEditingWeather = !_isEditingWeather;
+    });
+  }
+
+  void _applyCustomWeather(String weatherDescription, double temperature) {
+    setState(() {
+      _customWeatherData = WeatherData(
+        temperatureMax: temperature,
+        temperatureMin: temperature,
+        weatherCode: _getWeatherCodeFromDescription(weatherDescription),
+        date: DateTime.now().toString().split(' ')[0],
+      );
+      _isEditingWeather = false;
+    });
+  }
+
+  int _getWeatherCodeFromDescription(String description) {
+    switch (description.toLowerCase()) {
+      case 'ciel dégagé':
+        return 0;
+      case 'partiellement nuageux':
+        return 2;
+      case 'pluie':
+        return 63;
+      case 'neige':
+        return 73;
+      case 'brouillard':
+        return 45;
+      case 'orage':
+        return 95;
+      default:
+        return 0;
+    }
   }
 
   @override
@@ -41,6 +81,17 @@ class _WeatherActivityPageState extends State<WeatherActivityPage> {
         backgroundColor: const Color(0xFFF5E6D3),
         iconTheme: const IconThemeData(color: Color(0xFF8B4513)),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(_isEditingWeather ? Icons.close : Icons.edit),
+            onPressed: _toggleWeatherEdit,
+          ),
+          if (!_isEditingWeather)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _refreshWeather,
+            ),
+        ],
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -53,27 +104,31 @@ class _WeatherActivityPageState extends State<WeatherActivityPage> {
             ],
           ),
         ),
-        child: FutureBuilder<WeatherData>(
-          future: _weatherFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const _LoadingWidget();
-            }
+        child: _isEditingWeather
+            ? _WeatherEditForm(onApply: _applyCustomWeather)
+            : FutureBuilder<WeatherData>(
+                future: _weatherFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const _LoadingWidget();
+                  }
 
-            if (snapshot.hasError) {
-              return _ErrorWidget(
-                error: snapshot.error.toString(),
-                onRetry: _refreshWeather,
-              );
-            }
+                  if (snapshot.hasError) {
+                    return _ErrorWidget(
+                      error: snapshot.error.toString(),
+                      onRetry: _refreshWeather,
+                    );
+                  }
 
-            if (!snapshot.hasData) {
-              return const _EmptyStateWidget();
-            }
+                  if (!snapshot.hasData) {
+                    return const _EmptyStateWidget();
+                  }
 
-            return _WeatherContent(weatherData: snapshot.data!);
-          },
-        ),
+                  // Utiliser la météo personnalisée si elle existe, sinon la météo réelle
+                  final weatherToUse = _customWeatherData ?? snapshot.data!;
+                  return _WeatherContent(weatherData: weatherToUse);
+                },
+              ),
       ),
     );
   }
@@ -657,6 +712,242 @@ class _EmptyStateWidget extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _WeatherEditForm extends StatefulWidget {
+  final Function(String weatherDescription, double temperature) onApply;
+
+  const _WeatherEditForm({required this.onApply});
+
+  @override
+  State<_WeatherEditForm> createState() => _WeatherEditFormState();
+}
+
+class _WeatherEditFormState extends State<_WeatherEditForm> {
+  String _selectedWeather = 'Ciel dégagé';
+  double _temperature = 20.0;
+
+  final List<String> _weatherOptions = [
+    'Ciel dégagé',
+    'Partiellement nuageux',
+    'Pluie',
+    'Neige',
+    'Brouillard',
+    'Orage',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        children: [
+          const SizedBox(height: 40),
+          
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            elevation: 8,
+            child: Container(
+              padding: const EdgeInsets.all(32.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.white, Color(0xFFF8F8F8)],
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Icon(
+                    Icons.tune,
+                    size: 48,
+                    color: Color(0xFF8B4513),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  const Text(
+                    'Personnaliser la météo',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF8B4513),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  
+                  const SizedBox(height: 32),
+                  
+                  // Sélecteur de météo
+                  const Text(
+                    'Type de météo',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF8B4513),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFFD2691E), width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                      color: const Color(0xFFF5E6D3),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedWeather,
+                        isExpanded: true,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF8B4513),
+                        ),
+                        dropdownColor: const Color(0xFFF5E6D3),
+                        icon: const Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Color(0xFF8B4513),
+                        ),
+                        items: _weatherOptions.map((String weather) {
+                          return DropdownMenuItem<String>(
+                            value: weather,
+                            child: Text(weather),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              _selectedWeather = newValue;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 32),
+                  
+                  // Sélecteur de température
+                  const Text(
+                    'Température',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF8B4513),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFFD2691E), width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                      color: const Color(0xFFF5E6D3),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          '${_temperature.round()}°C',
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF8B4513),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 16),
+                        
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor: const Color(0xFFD2691E),
+                            inactiveTrackColor: const Color(0xFFD2691E).withValues(alpha: 0.3),
+                            thumbColor: const Color(0xFF8B4513),
+                            overlayColor: const Color(0xFFD2691E).withValues(alpha: 0.2),
+                            valueIndicatorColor: const Color(0xFF8B4513),
+                            valueIndicatorTextStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          child: Slider(
+                            value: _temperature,
+                            min: -10,
+                            max: 40,
+                            divisions: 50,
+                            label: '${_temperature.round()}°C',
+                            onChanged: (double value) {
+                              setState(() {
+                                _temperature = value;
+                              });
+                            },
+                          ),
+                        ),
+                        
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '-10°C',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF8B4513),
+                              ),
+                            ),
+                            Text(
+                              '40°C',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF8B4513),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 32),
+                  
+                  // Bouton Valider
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      widget.onApply(_selectedWeather, _temperature);
+                    },
+                    icon: const Icon(Icons.check),
+                    label: const Text(
+                      'Valider et générer les suggestions',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD2691E),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
