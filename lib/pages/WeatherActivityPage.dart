@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/weather_data.dart';
 import '../services/weather_service.dart';
+import '../services/weather_activity_service.dart';
 
 class WeatherActivityPage extends StatefulWidget {
   const WeatherActivityPage({super.key});
@@ -243,46 +244,9 @@ class _ActivitySuggestionsWidget extends StatelessWidget {
 
   const _ActivitySuggestionsWidget({required this.weatherData});
 
-  List<String> _getSuggestedActivities() {
-    switch (weatherData.weatherCode) {
-      case 0: // Ciel dégagé
-        return [
-          '🌞 Promenade au soleil',
-          '🚴‍♀️ Balade à vélo',
-          '🧺 Pique-nique au parc',
-          '📚 Lecture en terrasse',
-        ];
-      case 1:
-      case 2:
-      case 3: // Partiellement nuageux
-        return [
-          '🚶‍♀️ Promenade tranquille',
-          '☕ Café en terrasse',
-          '🎨 Dessin en plein air',
-          '🌸 Visite d\'un jardin',
-        ];
-      case 61:
-      case 63:
-      case 65: // Pluie
-        return [
-          '☔ Promenade sous la pluie',
-          '📖 Lecture douillette',
-          '🎵 Écouter la pluie',
-          '☕ Boisson chaude réconfortante',
-        ];
-      default:
-        return [
-          '🏠 Activités à l\'intérieur',
-          '📚 Moment lecture',
-          '🧘‍♀️ Méditation',
-          '☕ Pause détente',
-        ];
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final activities = _getSuggestedActivities();
+    final WeatherActivityService activityService = WeatherActivityService();
     
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -303,7 +267,61 @@ class _ActivitySuggestionsWidget extends StatelessWidget {
             
             const SizedBox(height: 16),
             
-            ...activities.map((activity) => _ActivityItem(activity: activity)),
+            FutureBuilder<List<String>>(
+              future: activityService.getSuggestedActivities(
+                weatherData.weatherDescription,
+                weatherData.temperatureMin,
+                weatherData.temperatureMax,
+              ),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B4513)),
+                      ),
+                    ),
+                  );
+                }
+                
+                if (snapshot.hasError) {
+                  return Container(
+                    padding: const EdgeInsets.all(16.0),
+                    child: const Text(
+                      'Erreur lors du chargement des activités',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF8B4513),
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
+                
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(16.0),
+                    child: const Text(
+                      'Aucune activité disponible pour le moment',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF8B4513),
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
+                
+                return Column(
+                  children: snapshot.data!
+                      .map((activity) => _ActivityItem(activity: activity))
+                      .toList(),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -393,6 +411,7 @@ class _MotivationalMessageWidget extends StatelessWidget {
           ),
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Icon(
               Icons.favorite,
