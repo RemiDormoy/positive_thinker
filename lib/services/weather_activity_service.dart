@@ -25,7 +25,7 @@ class WeatherActivityService {
     }
   }
 
-  Future<List<String>> getSuggestedActivities(
+  Future<List<ActiviteSuggestion>> getSuggestedActivities(
     String weatherDescription,
     double temperatureMin,
     double temperatureMax,
@@ -57,7 +57,44 @@ class WeatherActivityService {
     ]
     Ne renvoie que le JSON, pour que je puisse le déserialiser. Rien d'autre que le JSON
     """;
-    return [await geminiNanoService.generateResponse(prompt)];
+    
+    final response = await geminiNanoService.generateResponse(prompt);
+    
+    try {
+      // Nettoyer la réponse pour extraire uniquement le JSON
+      final cleanedResponse = _cleanJsonResponse(response);
+      
+      // Parser la réponse JSON nettoyée
+      final List<dynamic> jsonList = json.decode(cleanedResponse);
+      return jsonList.map((json) => ActiviteSuggestion(
+        titre: json['titre'] as String,
+        description: json['description'] as String,
+        explication: json['explication'] as String,
+      )).toList();
+    } catch (e) {
+      // En cas d'erreur de parsing, retourner une activité par défaut
+      return [
+        ActiviteSuggestion(
+          titre: "Activité par défaut",
+          description: "Une activité adaptée au temps",
+          explication: "Suggestion par défaut en cas d'erreur: $response",
+        ),
+      ];
+    }
+  }
+  
+  String _cleanJsonResponse(String response) {
+    // Trouver le premier "[" et le dernier "]"
+    final firstBracket = response.indexOf('[');
+    final lastBracket = response.lastIndexOf(']');
+    
+    // Si on ne trouve pas les crochets, retourner la réponse telle quelle
+    if (firstBracket == -1 || lastBracket == -1 || firstBracket >= lastBracket) {
+      return response;
+    }
+    
+    // Extraire uniquement la partie JSON entre les crochets (inclus)
+    return response.substring(firstBracket, lastBracket + 1);
   }
 }
 

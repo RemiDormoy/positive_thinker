@@ -267,7 +267,7 @@ class _ActivitySuggestionsWidget extends StatelessWidget {
             
             const SizedBox(height: 16),
             
-            FutureBuilder<List<String>>(
+            FutureBuilder<List<ActiviteSuggestion>>(
               future: activityService.getSuggestedActivities(
                 weatherData.weatherDescription,
                 weatherData.temperatureMin,
@@ -317,13 +317,101 @@ class _ActivitySuggestionsWidget extends StatelessWidget {
                 
                 return Column(
                   children: snapshot.data!
-                      .map((activity) => _ActivityItem(activity: activity))
+                      .map((activity) => _ActivitySuggestionItem(activiteSuggestion: activity))
                       .toList(),
                 );
               },
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ActivitySuggestionItem extends StatelessWidget {
+  final ActiviteSuggestion activiteSuggestion;
+
+  const _ActivitySuggestionItem({required this.activiteSuggestion});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5E6D3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFD2691E), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFD2691E),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  activiteSuggestion.titre,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF8B4513),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 8),
+          
+          Text(
+            activiteSuggestion.description,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF8B4513),
+              height: 1.4,
+            ),
+          ),
+          
+          const SizedBox(height: 8),
+          
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFE4B5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.lightbulb_outline,
+                  size: 16,
+                  color: Color(0xFFD2691E),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    activiteSuggestion.explication,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF8B4513),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
