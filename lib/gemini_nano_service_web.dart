@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'dart:js' as js;
 import 'gemini_nano_service.dart' as main;
 
 class GeminiNanoService {
-  static const MethodChannel _channel = MethodChannel('gemini_nano_service');
-
   /// Génère une réponse en utilisant Gemini Nano sur Web
   /// ou retourne un message d'indisponibilité sur les autres plateformes
   Future<String> generateResponse(String input) async {

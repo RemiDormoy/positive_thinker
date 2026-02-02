@@ -1,0 +1,152 @@
+[
+  {
+    "titre": "Randonnée en forêt",
+    "description": "Une immersion totale en pleine nature pour se ressourcer et observer la faune locale.",
+    "conditions": "Température clémente, ciel dégagé ou légèrement voilé."
+  },
+  {
+    "titre": "Visite de musée",
+    "description": "Découvrez les dernières expositions d'art ou d'histoire à l'abri des intempéries.",
+    "conditions": "Idéal quand il fait gris ou humide dehors."
+  },
+  {
+    "titre": "Cinéma",
+    "description": "Profitez des dernières sorties nationales avec un bon seau de popcorn.",
+    "conditions": "Parfait pour s'évader quand le temps est maussade."
+  },
+  {
+    "titre": "Pique-nique au parc",
+    "description": "Un moment convivial entre amis ou en famille sur l'herbe fraîche.",
+    "conditions": "Temps sec et ensoleillé indispensable."
+  },
+  {
+    "titre": "Session de lecture en bibliothèque",
+    "description": "Le calme absolu pour plonger dans un nouveau roman ou étudier.",
+    "conditions": "Agréable quand on cherche de la chaleur en hiver."
+  },
+  {
+    "titre": "Patinage sur glace",
+    "description": "Glissez sur la piste, que ce soit en extérieur ou en patinoire couverte.",
+    "conditions": "L'ambiance hivernale parfaite, surtout par temps sec."
+  },
+  {
+    "titre": "Jeux de société à la maison",
+    "description": "Une après-midi compétitive et chaleureuse sans sortir de chez soi.",
+    "conditions": "Idéal quand il est déconseillé de mettre le nez dehors."
+  },
+  {
+    "titre": "Surf ou Bodyboard",
+    "description": "Affrontez les vagues pour un maximum de sensations fortes.",
+    "conditions": "Nécessite un vent favorable pour former de belles vagues."
+  },
+  {
+    "titre": "Escalade en salle",
+    "description": "Un défi sportif complet pour tester sa force et son agilité.",
+    "conditions": "Une alternative sportive quand le rocher extérieur est mouillé."
+  },
+  {
+    "titre": "Balade à vélo",
+    "description": "Explorez les environs à votre rythme sur deux roues.",
+    "conditions": "Temps sec et peu de vent pour plus de confort."
+  },
+  {
+    "titre": "Atelier cuisine / Pâtisserie",
+    "description": "Apprenez à concocter de nouveaux plats ou des gâteaux gourmands.",
+    "conditions": "Parfait pour occuper un après-midi gris à l'intérieur."
+  },
+  {
+    "titre": "Baignade en lac ou mer",
+    "description": "Rafraîchissez-vous avec quelques brasses en plein air.",
+    "conditions": "Indispensable quand le mercure dépasse les 30°C."
+  },
+  {
+    "titre": "Ski ou Snowboard",
+    "description": "Dévalez les pistes enneigées pour faire le plein d'adrénaline.",
+    "conditions": "Nécessite une bonne couche de poudreuse fraîche."
+  },
+  {
+    "titre": "Jardinage",
+    "description": "Prenez soin de vos plantes, fleurs ou potager.",
+    "conditions": "Préférable quand le soleil ne tape pas trop fort pour ne pas brûler les plantes."
+  },
+  {
+    "titre": "Bowling",
+    "description": "Enchaînez les strikes dans une ambiance lumineuse et sonore.",
+    "conditions": "Activité d'intérieur classique pour les jours de pluie."
+  },
+  {
+    "titre": "Cerf-volant",
+    "description": "Faites voler votre engin coloré dans le ciel.",
+    "conditions": "Un vent modéré et régulier est essentiel."
+  },
+  {
+    "titre": "Spa et Bien-être",
+    "description": "Sauna, hammam et massages pour une détente absolue.",
+    "conditions": "Le contraste thermique apporte un confort incomparable."
+  },
+  {
+    "titre": "Photographie urbaine",
+    "description": "Capturez l'architecture et l'effervescence de la ville.",
+    "conditions": "Une belle lumière est nécessaire pour des clichés réussis."
+  },
+  {
+    "titre": "Cours de Yoga en ligne",
+    "description": "Une séance de stretching et de méditation dans son salon.",
+    "conditions": "Activité zen quand le tonnerre gronde dehors."
+  },
+  {
+    "titre": "Shopping en centre commercial",
+    "description": "Parcourez les boutiques à l'abri de la chaleur ou du froid.",
+    "conditions": "Les centres climatisés offrent un refuge idéal."
+  },
+  {
+    "titre": "Bataille de boules de neige",
+    "description": "Retombez en enfance avec une activité ludique et givrée.",
+    "conditions": "Possible uniquement avec de la neige fraîche et collante."
+  },
+  {
+    "titre": "Visite d'un aquarium",
+    "description": "Explorez les fonds marins sans vous mouiller.",
+    "conditions": "Excellent pour les familles lors de journées pluvieuses."
+  },
+  {
+    "titre": "Observation des étoiles",
+    "description": "Munissez-vous d'une carte du ciel et admirez les constellations.",
+    "conditions": "Absence totale de nuages indispensable."
+  },
+  {
+    "titre": "Tennis de table (Ping-Pong)",
+    "description": "Un sport rapide et amusant qui peut se jouer en intérieur.",
+    "conditions": "Le vent empêche de jouer dehors, privilégiez la salle."
+  },
+  {
+    "titre": "Course à pied (Running)",
+    "description": "Maintenez votre forme physique avec un parcours urbain ou forestier.",
+    "conditions": "Idéal quand il fait frais pour éviter la surchauffe."
+  },
+  {
+    "titre": "Escape Game",
+    "description": "Résolvez des énigmes en équipe pour sortir d'une pièce en moins d'une heure.",
+    "conditions": "Activité immersive totalement déconnectée du temps extérieur."
+  },
+  {
+    "titre": "Paddle sur rivière",
+    "description": "Une balade tranquille sur l'eau pour travailler son équilibre.",
+    "conditions": "Eau calme et absence de vent pour ne pas dériver."
+  },
+  {
+    "titre": "Karaoké",
+    "description": "Chantez vos titres préférés entre amis dans une salle privée.",
+    "conditions": "Parfait pour une soirée animée et bien au chaud."
+  },
+  {
+    "titre": "Parcours accrobranche",
+    "description": "Défiez la hauteur dans les arbres avec des tyroliennes et ponts de singe.",
+    "conditions": "Nécessite un temps sec pour la sécurité sur les câbles."
+  },
+  {
+    "titre": "Netflix & Chill",
+    "description": "S'installer confortablement sous un plaid avec une boisson chaude.",
+    "conditions": "Le meilleur moment pour rester chez soi en sécurité."
+  }
+]

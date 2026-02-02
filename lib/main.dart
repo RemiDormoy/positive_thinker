@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:positive_thinker/coach_page.dart';
 import 'package:positive_thinker/pages/ActivateNanoPage.dart';
+import 'package:positive_thinker/pages/WeatherActivityPage.dart';
 import 'package:positive_thinker/pages/positive_news_page.dart';
 import 'package:positive_thinker/pages/better_reading_page.dart';
 import 'package:positive_thinker/pages/writing_improvement_page.dart';
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
         "/positive_news": (context) => const PositiveNewsPage(),
         "/better_reading": (context) => const BetterReadingPage(),
         "/activate_nano": (context) => const ActivateNanoPage(),
+        "/weather_activity": (context) => const WeatherActivityPage(),
         "/writing_improvement": (context) => const WritingImprovementPage(),
       },
       debugShowCheckedModeBanner: false,
@@ -106,19 +108,6 @@ class HomePage extends StatelessWidget {
                   },
                 ),
 
-                const SizedBox(height: 30),
-
-                // Section Ma vie en mieux
-                _buildFeatureItem(
-                  icon: Icons.auto_awesome,
-                  title: 'Mon écriture en mieux',
-                  description:
-                      'Lachez vos messages les plus moches, je les corrigerais',
-                  onClick: () {
-                    Navigator.of(context).pushNamed("/writing_improvement");
-                  },
-                ),
-
                 /*const SizedBox(height: 30),
 
                 // Section La lentille positive
@@ -147,6 +136,19 @@ class HomePage extends StatelessWidget {
 
                 const SizedBox(height: 30),
 
+                // Section Ma vie en mieux
+                _buildFeatureItem(
+                  icon: Icons.sunny_snowing,
+                  title: 'Regarde comme il fait beau dehors',
+                  description:
+                  'Tu veux faire des trucs beaux ? Regarde ici',
+                  onClick: () {
+                    Navigator.of(context).pushNamed("/weather_activity");
+                  },
+                ),
+
+                const SizedBox(height: 30),
+
                 // Section Une meilleure relecture
                 _buildFeatureItem(
                   icon: Icons.flash_on,
@@ -155,6 +157,21 @@ class HomePage extends StatelessWidget {
                       'Revisitez votre vie avec positivité',
                   onClick: () {
                     Navigator.of(context).pushNamed("/better_reading");
+                  },
+                ),
+
+
+
+                const SizedBox(height: 30),
+
+                // Section Ma vie en mieux
+                _buildFeatureItem(
+                  icon: Icons.auto_awesome,
+                  title: 'Mon écriture en mieux',
+                  description:
+                  'Lachez vos messages les plus moches, je les corrigerais',
+                  onClick: () {
+                    Navigator.of(context).pushNamed("/writing_improvement");
                   },
                 ),
 
