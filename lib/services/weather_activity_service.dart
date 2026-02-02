@@ -5,6 +5,9 @@ import '../models/activite.dart';
 
 class WeatherActivityService {
   List<Activite>? _listeActivites;
+  String _lastPrompt = '';
+
+  String get lastPrompt => _lastPrompt;
 
   Future<List<Activite>> get listeActivites async {
     if (_listeActivites != null) {
@@ -57,6 +60,8 @@ class WeatherActivityService {
     ]
     Ne renvoie que le JSON, pour que je puisse le déserialiser. Rien d'autre que le JSON
     """;
+
+    _lastPrompt = prompt;
     
     final response = await geminiNanoService.generateResponse(prompt);
     

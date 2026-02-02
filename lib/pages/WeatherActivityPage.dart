@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/weather_data.dart';
 import '../services/weather_service.dart';
 import '../services/weather_activity_service.dart';
+import '../widgets/expandable_content_widget.dart';
 
 class WeatherActivityPage extends StatefulWidget {
   const WeatherActivityPage({super.key});
@@ -40,12 +41,6 @@ class _WeatherActivityPageState extends State<WeatherActivityPage> {
         backgroundColor: const Color(0xFFF5E6D3),
         iconTheme: const IconThemeData(color: Color(0xFF8B4513)),
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshWeather,
-          ),
-        ],
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -254,7 +249,7 @@ class _ActivitySuggestionsWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
               '✨ Activités suggérées',
@@ -316,9 +311,11 @@ class _ActivitySuggestionsWidget extends StatelessWidget {
                 }
                 
                 return Column(
-                  children: snapshot.data!
-                      .map((activity) => _ActivitySuggestionItem(activiteSuggestion: activity))
-                      .toList(),
+                  children: [
+                    ...snapshot.data!
+                        .map((activity) => _ActivitySuggestionItem(activiteSuggestion: activity))
+                        .toList(),
+                  ],
                 );
               },
             ),
