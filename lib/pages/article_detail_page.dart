@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -63,7 +65,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     debugPrint("Résumé de l'article : $article");
     final prompt =
         "Traduit de l'anglais vers le français le texte suivant : $article";
-    geminiNanoService.reformulate(prompt, GeminiReformulate.REFORMULATE).then((traduction) {
+    geminiNanoService.generateResponse(prompt).then((traduction) {
       setState(() {
         step = PositiveNewsStep.ADDING_GOOD_VIBES;
         firstTranslation = traduction;
@@ -82,6 +84,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
       setState(() {
         step = PositiveNewsStep.READY;
         //beforeEmoji = tadaaaa;
+        debugPrint("final content : $tadaaaa");
         finalContent = tadaaaa;
       });
       //_injectEmojis(tadaaaa);

@@ -89,8 +89,8 @@ class _UserAvatarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(200),
-          border: Border.all(color: Color(0xFF5D4037))
+        borderRadius: BorderRadius.circular(200),
+        border: Border.all(color: Color(0xFF5D4037)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(200),
@@ -107,7 +107,7 @@ class _AssistantAvatarWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(200),
-        border: Border.all(color: Color(0xFF5D4037))
+        border: Border.all(color: Color(0xFF5D4037)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(200),
@@ -136,10 +136,7 @@ class _UserMessageWidget extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF8B4513),
-            Color(0xFF5D4037),
-          ],
+          colors: [Color(0xFF8B4513), Color(0xFF5D4037)],
         ),
         borderRadius: BorderRadius.circular(18.0),
       ),
@@ -150,11 +147,17 @@ class _UserMessageWidget extends StatelessWidget {
           if (message.image != null) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(12.0),
-              child: Image.file(
-                message.image!,
-                height: 300,
-                fit: BoxFit.contain,
-              ),
+              child: kIsWeb
+                  ? Image.network(
+                      message.image!.path,
+                      height: 300,
+                      fit: BoxFit.contain,
+                    )
+                  : Image.file(
+                      message.image!,
+                      height: 300,
+                      fit: BoxFit.contain,
+                    ),
             ),
             if (message.text.isNotEmpty) const SizedBox(height: 8.0),
           ],
@@ -248,8 +251,10 @@ class _TypingIndicatorWidgetState extends State<_TypingIndicatorWidget>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFFF5E6D3).withValues(alpha: 0.7), // Crème/beige plus transparent
-            const Color(0xFFE8B4A0).withValues(alpha: 0.5), // Orange/pêche plus transparent
+            const Color(0xFFF5E6D3).withValues(alpha: 0.7),
+            // Crème/beige plus transparent
+            const Color(0xFFE8B4A0).withValues(alpha: 0.5),
+            // Orange/pêche plus transparent
           ],
         ),
         borderRadius: BorderRadius.circular(18.0),
@@ -280,9 +285,9 @@ class _TypingIndicatorWidgetState extends State<_TypingIndicatorWidget>
               return Text(
                 '...',
                 style: TextStyle(
-                  color: const Color(0xFF5D4037).withValues(
-                    alpha: 0.5 + (_animationController.value * 0.5),
-                  ),
+                  color: const Color(
+                    0xFF5D4037,
+                  ).withValues(alpha: 0.5 + (_animationController.value * 0.5)),
                   fontSize: 16.0,
                 ),
               );
@@ -391,7 +396,8 @@ class _ChatInputWidget extends StatelessWidget {
               child: TextField(
                 controller: controller,
                 enabled: !isGenerating,
-                maxLines: null,
+                maxLines: 1,
+                textInputAction: TextInputAction.send,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
                   hintText: 'Écrit à gnogno',
@@ -424,12 +430,10 @@ class _ChatInputWidget extends StatelessWidget {
                     vertical: 12.0,
                   ),
                 ),
-                style: const TextStyle(
-                  color: Color(0xFF5D4037),
-                ),
+                style: const TextStyle(color: Color(0xFF5D4037)),
                 onSubmitted: (text) {
-                  if (!isGenerating) {
-                    onSendMessage(text);
+                  if (!isGenerating && text.trim().isNotEmpty) {
+                    onSendMessage(text.trim());
                   }
                 },
               ),

@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:positive_thinker/coach_page.dart';
+import 'package:positive_thinker/pages/ActivateNanoPage.dart';
 import 'package:positive_thinker/pages/positive_news_page.dart';
 import 'package:positive_thinker/pages/better_reading_page.dart';
 import 'package:positive_thinker/pages/writing_improvement_page.dart';
@@ -21,6 +23,7 @@ class MyApp extends StatelessWidget {
         "/coach": (context) => SmartCoachAssistantPage(),
         "/positive_news": (context) => const PositiveNewsPage(),
         "/better_reading": (context) => const BetterReadingPage(),
+        "/activate_nano": (context) => const ActivateNanoPage(),
         "/writing_improvement": (context) => const WritingImprovementPage(),
       },
       debugShowCheckedModeBanner: false,
@@ -76,6 +79,21 @@ class HomePage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 50),
+
+                if (kIsWeb) ...[
+                  // Section Positive Coach
+                  _buildFeatureItem(
+                    icon: Icons.psychology,
+                    title: 'Activer Gemini Nano',
+                    description:
+                    'Si vous faites pas ça, ça marchera pas',
+                    onClick: () {
+                      Navigator.of(context).pushNamed("/activate_nano");
+                    },
+                  ),
+
+                  const SizedBox(height: 30),
+                ],
 
                 // Section Positive Coach
                 _buildFeatureItem(
