@@ -156,7 +156,7 @@ import FoundationModels
         let response = try await session.respond(to: fullPrompt)
         
         DispatchQueue.main.async {
-          result(response)
+            result(response.content)
         }
       } catch {
         DispatchQueue.main.async {
@@ -185,7 +185,7 @@ import FoundationModels
         let response = try await session.respond(to: fullPrompt)
         
         DispatchQueue.main.async {
-          result(response)
+          result(response.content)
         }
       } catch {
         DispatchQueue.main.async {
@@ -258,7 +258,7 @@ import FoundationModels
         let response = try await session.respond(to: fullPrompt)
         
         DispatchQueue.main.async {
-          result(response)
+          result(response.content)
         }
       } catch {
         DispatchQueue.main.async {
