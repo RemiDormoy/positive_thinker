@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:positive_thinker/coach_page.dart';
-import 'package:positive_thinker/pages/ActivateNanoPage.dart';
-import 'package:positive_thinker/pages/WeatherActivityPage.dart';
-import 'package:positive_thinker/pages/positive_news_page.dart';
+import 'package:positive_thinker/pages/activate_nano_page.dart';
 import 'package:positive_thinker/pages/better_reading_page.dart';
+import 'package:positive_thinker/pages/coach_page.dart';
+import 'package:positive_thinker/pages/positive_news_page.dart';
+import 'package:positive_thinker/pages/weather_activity_page.dart';
 import 'package:positive_thinker/pages/writing_improvement_page.dart';
 
 void main() {
@@ -60,11 +60,7 @@ class HomePage extends StatelessWidget {
                 // Titre principal
                 const Text(
                   'Positive Thinker',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF8B4513),
-                  ),
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
                 ),
 
                 const SizedBox(height: 10),
@@ -72,11 +68,7 @@ class HomePage extends StatelessWidget {
                 // Sous-titre
                 const Text(
                   'Cultivez votre bonheur au quotidien',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF8B4513),
-                    fontStyle: FontStyle.italic,
-                  ),
+                  style: TextStyle(fontSize: 16, color: Color(0xFF8B4513), fontStyle: FontStyle.italic),
                   textAlign: TextAlign.center,
                 ),
 
@@ -87,8 +79,7 @@ class HomePage extends StatelessWidget {
                   _buildFeatureItem(
                     icon: Icons.psychology,
                     title: 'Activer Gemini Nano',
-                    description:
-                    'Si vous faites pas ça, ça marchera pas',
+                    description: 'Si vous faites pas ça, ça marchera pas',
                     onClick: () {
                       Navigator.of(context).pushNamed("/activate_nano");
                     },
@@ -101,8 +92,7 @@ class HomePage extends StatelessWidget {
                 _buildFeatureItem(
                   icon: Icons.favorite,
                   title: 'Positive Coach',
-                  description:
-                      'Votre accompagnateur personnel vers une vie plus positive',
+                  description: 'Votre accompagnateur personnel vers une vie plus positive',
                   onClick: () {
                     Navigator.of(context).pushNamed("/coach");
                   },
@@ -120,15 +110,13 @@ class HomePage extends StatelessWidget {
                     Navigator.of(context).pushNamed("/coach");
                   },
                 ),*/
-
                 const SizedBox(height: 30),
 
                 // Section Le côté positif en bref
                 _buildFeatureItem(
                   icon: Icons.menu_book,
                   title: 'Le côté positif en bref',
-                  description:
-                      'Les news de la france mais en plus positif',
+                  description: 'Les news de la france mais en plus positif',
                   onClick: () {
                     Navigator.of(context).pushNamed("/positive_news");
                   },
@@ -140,8 +128,7 @@ class HomePage extends StatelessWidget {
                 _buildFeatureItem(
                   icon: Icons.sunny_snowing,
                   title: 'Regarde comme il fait beau dehors',
-                  description:
-                  'Tu veux faire des trucs beaux ? Regarde ici',
+                  description: 'Tu veux faire des trucs beaux ? Regarde ici',
                   onClick: () {
                     Navigator.of(context).pushNamed("/weather_activity");
                   },
@@ -153,14 +140,11 @@ class HomePage extends StatelessWidget {
                 _buildFeatureItem(
                   icon: Icons.flash_on,
                   title: 'Une meilleure relecture',
-                  description:
-                      'Revisitez votre vie avec positivité',
+                  description: 'Revisitez votre vie avec positivité',
                   onClick: () {
                     Navigator.of(context).pushNamed("/better_reading");
                   },
                 ),
-
-
 
                 const SizedBox(height: 30),
 
@@ -168,8 +152,7 @@ class HomePage extends StatelessWidget {
                 _buildFeatureItem(
                   icon: Icons.auto_awesome,
                   title: 'Mon écriture en mieux',
-                  description:
-                  'Lachez vos messages les plus moches, je les corrigerais',
+                  description: 'Lachez vos messages les plus moches, je les corrigerais',
                   onClick: () {
                     Navigator.of(context).pushNamed("/writing_improvement");
                   },
@@ -180,11 +163,7 @@ class HomePage extends StatelessWidget {
                 // Citation en bas
                 const Text(
                   '"Chaque jour est une nouvelle opportunité de choisir le bonheur."',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontStyle: FontStyle.italic,
-                    color: Color(0xFF8B4513),
-                  ),
+                  style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic, color: Color(0xFF8B4513)),
                   textAlign: TextAlign.center,
                 ),
 
@@ -229,21 +208,10 @@ class HomePage extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF8B4513),
-                      ),
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF8B4513),
-                        height: 1.4,
-                      ),
-                    ),
+                    Text(description, style: const TextStyle(fontSize: 14, color: Color(0xFF8B4513), height: 1.4)),
                   ],
                 ),
               ),

@@ -1,19 +1,19 @@
 import 'dart:io';
-import 'package:equatable/equatable.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:positive_thinker/gemini_nano_service.dart';
+import 'package:positive_thinker/models/chat_message.dart';
+import 'package:positive_thinker/services/gemini_nano_service_with_metrics.dart';
+import 'package:positive_thinker/widgets/performance_metrics_widget.dart';
 
-part 'gnocchi_chat_messages.dart';
-
+part '../widgets/chat_messages_list_widget.dart';
 
 class SmartCoachAssistantPage extends StatefulWidget {
   const SmartCoachAssistantPage({super.key});
 
   @override
-  State<SmartCoachAssistantPage> createState() =>
-      _SmartCoachAssistantPageState();
+  State<SmartCoachAssistantPage> createState() => _SmartCoachAssistantPageState();
 }
 
 class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
@@ -21,9 +21,8 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isGenerating = false;
-  final GeminiNanoService geminiNanoService = GeminiNanoService();
+  final GeminiNanoServiceWithMetrics geminiNanoService = GeminiNanoServiceWithMetrics();
   final ImagePicker _imagePicker = ImagePicker();
-
 
   @override
   void initState() {
@@ -55,14 +54,10 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-      AppBar(
+      appBar: AppBar(
         title: Text(
           "Coach Gnocchi",
-          style: const TextStyle(
-            color: Color(0xFF8B4513),
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(color: Color(0xFF8B4513), fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFFF5E6D3),
         iconTheme: const IconThemeData(color: Color(0xFF8B4513)),
@@ -83,10 +78,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
                   ],
                 ),
               ),
-              child: _ChatMessagesListWidget(
-                messages: _messages,
-                scrollController: _scrollController,
-              ),
+              child: _ChatMessagesListWidget(messages: _messages, scrollController: _scrollController),
             ),
           ),
           _ChatInputWidget(
@@ -95,14 +87,14 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
             onSendMessage: _handleSendMessage,
             onImageTap: _handleImageSelection,
           ),
+          PerformanceMetricsWidget(tracker: geminiNanoService.tracker),
         ],
       ),
     );
   }
 
-
   Future<String> _generateResponse(String prompt) async {
-      return _generateResponseWithGemini(prompt);
+    return _generateResponseWithGemini(prompt);
   }
 
   Future<void> _handleSendMessage(String text) async {
@@ -110,9 +102,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
 
     // Ajouter le message utilisateur
     setState(() {
-      _messages.add(
-        ChatMessage(text: text.trim(), isUser: true, timestamp: DateTime.now()),
-      );
+      _messages.add(ChatMessage(text: text.trim(), isUser: true, timestamp: DateTime.now()));
       _isGenerating = true;
     });
 
@@ -121,14 +111,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
 
     // Ajouter un message de chargement pour l'IA
     setState(() {
-      _messages.add(
-        ChatMessage(
-          text: "",
-          isUser: false,
-          timestamp: DateTime.now(),
-          isLoading: true,
-        ),
-      );
+      _messages.add(ChatMessage(text: "", isUser: false, timestamp: DateTime.now(), isLoading: true));
     });
 
     try {
@@ -137,9 +120,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
       // Remplacer le message de chargement par la réponse
       setState(() {
         _messages.removeLast();
-        _messages.add(
-          ChatMessage(text: response, isUser: false, timestamp: DateTime.now()),
-        );
+        _messages.add(ChatMessage(text: response, isUser: false, timestamp: DateTime.now()));
         _isGenerating = false;
       });
     } catch (e) {
@@ -181,7 +162,6 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
       """Imagine que tu es un chien dont le rôle est de me faire comprendre que ma vie est super bien. 
        J'ai dit le message suivant : $prompt
        Je voudrais que tu me montres, en tant que chien qui parle français, le bon côté des choses dans ce que j'ai dit, en moins de 100 mots""",
-
     );
     return result.trim();
   }
@@ -203,10 +183,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
         return Container(
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
           ),
           child: SafeArea(
             child: Column(
@@ -216,10 +193,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
                 Container(
                   width: 40,
                   height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -265,10 +239,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
       if (mounted) {
         final String sourceText = source == ImageSource.camera ? 'caméra' : 'galerie';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur lors de l\'accès à la $sourceText'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Erreur lors de l\'accès à la $sourceText'), backgroundColor: Colors.red),
         );
       }
     }
@@ -279,45 +250,28 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
 
     // Ajouter le message utilisateur avec image
     setState(() {
-      _messages.add(
-        ChatMessage(
-          text: "",
-          isUser: true,
-          timestamp: DateTime.now(),
-          image: imageFile,
-        ),
-      );
+      _messages.add(ChatMessage(text: "", isUser: true, timestamp: DateTime.now(), image: imageFile));
       _isGenerating = true;
     });
 
-
     // Ajouter un message de chargement pour l'IA
     setState(() {
-      _messages.add(
-        ChatMessage(
-          text: "...",
-          isUser: false,
-          timestamp: DateTime.now(),
-          isLoading: true,
-        ),
-      );
+      _messages.add(ChatMessage(text: "...", isUser: false, timestamp: DateTime.now(), isLoading: true));
     });
 
     _scrollToBottom();
-    
+
     _generateResponseWithImageGemini(imageFile);
   }
 
   Future<void> _generateResponseWithImageGemini(File imageFile) async {
     try {
       final result = await geminiNanoService.generateResponseWithImage(imageFile);
-      
+
       // Remplacer le message de chargement par la réponse
       setState(() {
         _messages.removeLast();
-        _messages.add(
-          ChatMessage(text: result.trim(), isUser: false, timestamp: DateTime.now()),
-        );
+        _messages.add(ChatMessage(text: result.trim(), isUser: false, timestamp: DateTime.now()));
         _isGenerating = false;
       });
     } catch (e) {
@@ -334,7 +288,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
         _isGenerating = false;
       });
     }
-    
+
     _scrollToBottom();
   }
 }
@@ -345,12 +299,7 @@ class _ImageSourceButton extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const _ImageSourceButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
+  const _ImageSourceButton({required this.icon, required this.label, required this.color, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -362,24 +311,13 @@ class _ImageSourceButton extends StatelessWidget {
           Container(
             width: 60,
             height: 60,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: 30,
-              color: color,
-            ),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+            child: Icon(icon, size: 30, color: color),
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
-              color: color,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.w500),
           ),
         ],
       ),

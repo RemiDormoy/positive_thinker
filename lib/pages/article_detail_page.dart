@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:positive_thinker/services/gemini_nano_service.dart';
+import 'package:positive_thinker/services/gemini_nano_service_with_metrics.dart';
+import 'package:positive_thinker/widgets/performance_metrics_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:positive_thinker/gemini_nano_service.dart';
+
 import '../models/guardian_article_detail.dart';
 import '../services/guardian_service.dart';
 
@@ -9,11 +12,7 @@ class ArticleDetailPage extends StatefulWidget {
   final String apiUrl;
   final String title;
 
-  const ArticleDetailPage({
-    super.key,
-    required this.apiUrl,
-    required this.title,
-  });
+  const ArticleDetailPage({super.key, required this.apiUrl, required this.title});
 
   @override
   State<ArticleDetailPage> createState() => _ArticleDetailPageState();
@@ -27,7 +26,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
   String firstTranslation = "";
   String beforeEmoji = "";
   GuardianArticleDetail? articleDetail;
-  final GeminiNanoService geminiNanoService = GeminiNanoService();
+  final GeminiNanoServiceWithMetrics geminiNanoService = GeminiNanoServiceWithMetrics();
 
   @override
   void initState() {
@@ -61,8 +60,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
   _translateArticles(String article) {
     debugPrint("Résumé de l'article : $article");
-    final prompt =
-        "Traduit de l'anglais vers le français le texte suivant : $article";
+    final prompt = "Traduit de l'anglais vers le français le texte suivant : $article";
     geminiNanoService.generateResponse(prompt).then((traduction) {
       setState(() {
         step = PositiveNewsStep.ADDING_GOOD_VIBES;
@@ -74,9 +72,8 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
   _injectGoodVibes(String article) {
     debugPrint("Traduction du résumé : $article");
-    final prompt =
-        """Le texte suivant est un résumé d'article en quelques points : $article.
-        Je veux que tu gardes la même struture et que pour chacun des points tu les présentes comme des supers nouvelles.
+    final prompt = """Le texte suivant est un résumé d'article en quelques points : $article.
+        Je veux que tu gardes la même structure et que pour chacun des points tu les présentes comme des supers nouvelles.
         Le résultat doit faire moins de 100 mots et être super enthousiaste""";
     geminiNanoService.generateResponse(prompt).then((tadaaaa) {
       setState(() {
@@ -108,41 +105,45 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
       appBar: AppBar(
         title: Text(
           "Résumé de l'article",
-          style: const TextStyle(
-            color: Color(0xFF8B4513),
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(color: Color(0xFF8B4513), fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFFF5E6D3),
         iconTheme: const IconThemeData(color: Color(0xFF8B4513)),
         elevation: 0,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF5E6D3), Color(0xFFE8B4A0)],
-          ),
-        ),
-        child: step == PositiveNewsStep.LOADING_CONTENT
-            ? _LoadingContentFromInternetWidget()
-            : step == PositiveNewsStep.SUMMURAZING_CONTENT
-            ? _LoadingSummarizedContent()
-            : step == PositiveNewsStep.TRANSLATING
-            ? _TranslatingWidget()
-            : step == PositiveNewsStep.EMOJIFICATION
-            ? _EmojificationWidget()
-            : step == PositiveNewsStep.ADDING_GOOD_VIBES
-            ? _AddingGoodVibesWidget()
-            : _Content(
-                finalContent, 
-                articleDetail!, 
-                originalContent, 
-                originalSummary, 
-                firstTranslation,
-                beforeEmoji,
+      body: Column(
+        children: [
+          PerformanceMetricsWidget(tracker: geminiNanoService.tracker),
+          Expanded(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFFF5E6D3), Color(0xFFE8B4A0)],
+                ),
               ),
+              child: step == PositiveNewsStep.LOADING_CONTENT
+                  ? _LoadingContentFromInternetWidget()
+                  : step == PositiveNewsStep.SUMMURAZING_CONTENT
+                  ? _LoadingSummarizedContent()
+                  : step == PositiveNewsStep.TRANSLATING
+                  ? _TranslatingWidget()
+                  : step == PositiveNewsStep.EMOJIFICATION
+                  ? _EmojificationWidget()
+                  : step == PositiveNewsStep.ADDING_GOOD_VIBES
+                  ? _AddingGoodVibesWidget()
+                  : _Content(
+                      finalContent,
+                      articleDetail!,
+                      originalContent,
+                      originalSummary,
+                      firstTranslation,
+                      beforeEmoji,
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -157,10 +158,10 @@ class _Content extends StatelessWidget {
   final String beforeEmoji;
 
   const _Content(
-    this.content, 
-    this.articleDetail, 
-    this.originalContent, 
-    this.originalSummary, 
+    this.content,
+    this.articleDetail,
+    this.originalContent,
+    this.originalSummary,
     this.firstTranslation,
     this.beforeEmoji,
   );
@@ -180,32 +181,17 @@ class _Content extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _ContentWidget(content: content),
-          _LinkWidget(
-            webUrl: articleDetail.webUrl,
-            onLinkTap: () => _launchUrl(articleDetail.webUrl),
-          ),
+          _LinkWidget(webUrl: articleDetail.webUrl, onLinkTap: () => _launchUrl(articleDetail.webUrl)),
           _WarningWidget(),
           ExpandableContentWidget(
             title: 'Contenu original (en anglais)',
             content: originalContent,
             icon: Icons.article,
           ),
-          ExpandableContentWidget(
-            title: 'Premier résumé',
-            content: originalSummary,
-            icon: Icons.summarize,
-          ),
-          ExpandableContentWidget(
-            title: 'Première traduction',
-            content: firstTranslation,
-            icon: Icons.translate,
-          ),
-          ExpandableContentWidget(
-            title: 'Ajout des bonnes ondes',
-            content: beforeEmoji,
-            icon: Icons.sunny,
-          ),
-          const SizedBox(height: 30)
+          ExpandableContentWidget(title: 'Premier résumé', content: originalSummary, icon: Icons.summarize),
+          ExpandableContentWidget(title: 'Première traduction', content: firstTranslation, icon: Icons.translate),
+          ExpandableContentWidget(title: 'Ajout des bonnes ondes', content: beforeEmoji, icon: Icons.sunny),
+          const SizedBox(height: 30),
         ],
       ),
     );
@@ -216,10 +202,7 @@ class _LinkWidget extends StatelessWidget {
   final String webUrl;
   final VoidCallback onLinkTap;
 
-  const _LinkWidget({
-    required this.webUrl,
-    required this.onLinkTap,
-  });
+  const _LinkWidget({required this.webUrl, required this.onLinkTap});
 
   @override
   Widget build(BuildContext context) {
@@ -235,9 +218,7 @@ class _LinkWidget extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF8B4513),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
     );
@@ -257,45 +238,17 @@ class _ContentWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
       ),
       child: MarkdownBody(
         data: content,
         styleSheet: MarkdownStyleSheet(
-          p: const TextStyle(
-            fontSize: 16,
-            height: 1.6,
-            color: Color(0xFF2C1810),
-          ),
-          h1: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF8B4513),
-          ),
-          h2: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF8B4513),
-          ),
-          h3: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF8B4513),
-          ),
-          strong: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF8B4513),
-          ),
-          em: const TextStyle(
-            fontStyle: FontStyle.italic,
-            color: Color(0xFF6B4423),
-          ),
+          p: const TextStyle(fontSize: 16, height: 1.6, color: Color(0xFF2C1810)),
+          h1: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
+          h2: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
+          h3: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
+          strong: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
+          em: const TextStyle(fontStyle: FontStyle.italic, color: Color(0xFF6B4423)),
         ),
       ),
     );
@@ -315,11 +268,7 @@ class _LoadingContentFromInternetWidget extends StatelessWidget {
             SizedBox(height: 16),
             Text(
               "Chargement du contenu de l'article",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -342,11 +291,7 @@ class _LoadingSummarizedContent extends StatelessWidget {
             SizedBox(height: 16),
             Text(
               "Création du résumé",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -369,11 +314,7 @@ class _TranslatingWidget extends StatelessWidget {
             SizedBox(height: 16),
             Text(
               "Traduction du résumé",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -396,11 +337,7 @@ class _EmojificationWidget extends StatelessWidget {
             SizedBox(height: 16),
             Text(
               "Pose de la touche finale !",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -423,11 +360,7 @@ class _AddingGoodVibesWidget extends StatelessWidget {
             SizedBox(height: 16),
             Text(
               "Injection d'ondes positives",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -451,20 +384,12 @@ class _WarningWidget extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.warning,
-            color: Colors.orange.shade900,
-            size: 24,
-          ),
+          Icon(Icons.warning, color: Colors.orange.shade900, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               'Attention, les faits sont légèrement modifiés à l\'aide de l\'IA pour leur donner un aspect positif, vérifiez-les sur internet avant de les partager',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.orange.shade900,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.orange.shade900, fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -496,30 +421,17 @@ class _ExpandableContentWidgetState extends State<ExpandableContentWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: widget.withPadding? 20 : 0, vertical: 5),
+      margin: EdgeInsets.symmetric(horizontal: widget.withPadding ? 20 : 0, vertical: 5),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 2,
-            offset: Offset(0, 1),
-          ),
-        ],
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))],
       ),
       child: ExpansionTile(
-        leading: Icon(
-          widget.icon,
-          color: const Color(0xFF8B4513),
-        ),
+        leading: Icon(widget.icon, color: const Color(0xFF8B4513)),
         title: Text(
           widget.title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF8B4513),
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF8B4513)),
         ),
         onExpansionChanged: (expanded) {
           setState(() {
@@ -532,11 +444,7 @@ class _ExpandableContentWidgetState extends State<ExpandableContentWidget> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Text(
               widget.content.isNotEmpty ? widget.content : 'Contenu vide',
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.5,
-                color: Color(0xFF2C1810),
-              ),
+              style: const TextStyle(fontSize: 14, height: 1.5, color: Color(0xFF2C1810)),
             ),
           ),
         ],
@@ -545,11 +453,4 @@ class _ExpandableContentWidgetState extends State<ExpandableContentWidget> {
   }
 }
 
-enum PositiveNewsStep {
-  LOADING_CONTENT,
-  SUMMURAZING_CONTENT,
-  TRANSLATING,
-  ADDING_GOOD_VIBES,
-  EMOJIFICATION,
-  READY,
-}
+enum PositiveNewsStep { LOADING_CONTENT, SUMMURAZING_CONTENT, TRANSLATING, ADDING_GOOD_VIBES, EMOJIFICATION, READY }

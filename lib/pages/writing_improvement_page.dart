@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:positive_thinker/gemini_nano_service.dart';
 import 'package:positive_thinker/pages/article_detail_page.dart';
+import 'package:positive_thinker/services/gemini_nano_service.dart';
 
 class WritingImprovementPage extends StatefulWidget {
   const WritingImprovementPage({super.key});
@@ -90,10 +90,8 @@ class _WritingImprovementPageState extends State<WritingImprovementPage> {
           child: Column(
             children: [
               // Header avec bouton retour
-              _HeaderWidget(
-                onBackPressed: () => Navigator.of(context).pop(),
-              ),
-              
+              _HeaderWidget(onBackPressed: () => Navigator.of(context).pop()),
+
               // Contenu principal
               Expanded(
                 child: SingleChildScrollView(
@@ -103,7 +101,7 @@ class _WritingImprovementPageState extends State<WritingImprovementPage> {
                     children: [
                       // Description
                       _InstructionWidget(),
-                      
+
                       const SizedBox(height: 30),
 
                       if (step == CorrectionSteps.READY) ...[
@@ -121,13 +119,17 @@ class _WritingImprovementPageState extends State<WritingImprovementPage> {
                           maxWords: _maxWords,
                           enabled: step == CorrectionSteps.WAITING_FOR_INPUT,
                         ),
-                        
+
                         const SizedBox(height: 30),
-                        
+
                         // Bouton corriger
                         _CorrectButtonWidget(
-                          onPressed: _wordCount > 0 && _wordCount <= _maxWords && step == CorrectionSteps.WAITING_FOR_INPUT ? _onCorrectPressed : null,
-                          isEnabled: _wordCount > 0 && _wordCount <= _maxWords && step == CorrectionSteps.WAITING_FOR_INPUT,
+                          onPressed:
+                              _wordCount > 0 && _wordCount <= _maxWords && step == CorrectionSteps.WAITING_FOR_INPUT
+                              ? _onCorrectPressed
+                              : null,
+                          isEnabled:
+                              _wordCount > 0 && _wordCount <= _maxWords && step == CorrectionSteps.WAITING_FOR_INPUT,
                           loading: step == CorrectionSteps.CORRECTING,
                         ),
                       ],
@@ -153,11 +155,7 @@ class _WritingImprovementPageState extends State<WritingImprovementPage> {
   }
 }
 
-enum CorrectionSteps {
-  WAITING_FOR_INPUT,
-  CORRECTING,
-  READY,
-}
+enum CorrectionSteps { WAITING_FOR_INPUT, CORRECTING, READY }
 
 // Widget privé pour le header
 class _HeaderWidget extends StatelessWidget {
@@ -173,21 +171,13 @@ class _HeaderWidget extends StatelessWidget {
         children: [
           IconButton(
             onPressed: onBackPressed,
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Color(0xFF8B4513),
-              size: 28,
-            ),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF8B4513), size: 28),
           ),
           const SizedBox(width: 16),
           const Expanded(
             child: Text(
               'Mon écriture en mieux',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
             ),
           ),
         ],
@@ -212,30 +202,18 @@ class _InstructionWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.science_outlined,
-                color: Color(0xFFD2691E),
-                size: 24,
-              ),
+              Icon(Icons.science_outlined, color: Color(0xFFD2691E), size: 24),
               const SizedBox(width: 12),
               const Text(
                 'Le correcteur fou !',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF8B4513),
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
               ),
             ],
           ),
           const SizedBox(height: 12),
           const Text(
             "Balance moi n'importe quoi, ça ressortira propre",
-            style: TextStyle(
-              fontSize: 16,
-              color: Color(0xFF8B4513),
-              height: 1.4,
-            ),
+            style: TextStyle(fontSize: 16, color: Color(0xFF8B4513), height: 1.4),
           ),
         ],
       ),
@@ -258,44 +236,23 @@ class _CorrectedTextWidget extends StatelessWidget {
         color: Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.green, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.green.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.green.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 24,
-              ),
+              Icon(Icons.check_circle, color: Colors.green, size: 24),
               const SizedBox(width: 12),
               const Text(
                 'Votre texte corrigé',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF8B4513),
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            text,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Color(0xFF8B4513),
-              height: 1.5,
-            ),
-          ),
+          Text(text, style: const TextStyle(fontSize: 16, color: Color(0xFF8B4513), height: 1.5)),
         ],
       ),
     );
@@ -319,36 +276,26 @@ class _TextFieldWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isOverLimit = wordCount > maxWords;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Votre message à corriger :',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF8B4513),
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF8B4513)),
         ),
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
             color: enabled ? Colors.white.withValues(alpha: 0.9) : Colors.grey.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isOverLimit ? Colors.red : Colors.white,
-              width: 2,
-            ),
+            border: Border.all(color: isOverLimit ? Colors.red : Colors.white, width: 2),
           ),
           child: TextField(
             controller: controller,
             maxLines: 8,
             enabled: enabled,
-            style: TextStyle(
-              fontSize: 16,
-              color: enabled ? Color(0xFF8B4513) : Colors.grey,
-            ),
+            style: TextStyle(fontSize: 16, color: enabled ? Color(0xFF8B4513) : Colors.grey),
             decoration: InputDecoration(
               hintText: enabled ? 'Collez votre message ici...' : 'Correction en cours...',
               hintStyle: TextStyle(
@@ -376,11 +323,7 @@ class _TextFieldWidget extends StatelessWidget {
             if (isOverLimit)
               const Text(
                 'Limite dépassée !',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.red,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.red, fontWeight: FontWeight.w600),
               ),
           ],
         ),
@@ -395,11 +338,7 @@ class _CorrectButtonWidget extends StatelessWidget {
   final bool isEnabled;
   final bool loading;
 
-  const _CorrectButtonWidget({
-    required this.onPressed,
-    required this.isEnabled,
-    required this.loading,
-  });
+  const _CorrectButtonWidget({required this.onPressed, required this.isEnabled, required this.loading});
 
   @override
   Widget build(BuildContext context) {
@@ -412,27 +351,18 @@ class _CorrectButtonWidget extends StatelessWidget {
           backgroundColor: isEnabled ? Color(0xFFD2691E) : Colors.grey,
           foregroundColor: Colors.white,
           elevation: isEnabled ? 4 : 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             loading
                 ? CircularProgressIndicator(color: Colors.white)
-                : Icon(
-                    Icons.auto_fix_high,
-                    size: 24,
-                    color: Colors.white,
-                  ),
+                : Icon(Icons.auto_fix_high, size: 24, color: Colors.white),
             const SizedBox(width: 12),
             Text(
               loading ? 'Correction en cours...' : 'Corriger',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -458,26 +388,14 @@ class _RestartButton extends StatelessWidget {
           backgroundColor: Color(0xFF4CAF50),
           foregroundColor: Colors.white,
           elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.refresh,
-              size: 24,
-              color: Colors.white,
-            ),
+            Icon(Icons.refresh, size: 24, color: Colors.white),
             const SizedBox(width: 12),
-            Text(
-              'Recommencer',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text('Recommencer', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
       ),

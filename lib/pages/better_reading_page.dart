@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:positive_thinker/gemini_nano_service.dart';
 import 'package:positive_thinker/pages/article_detail_page.dart';
+import 'package:positive_thinker/services/gemini_nano_service.dart';
+import 'package:positive_thinker/services/gemini_nano_service_with_metrics.dart';
 
 class BetterReadingPage extends StatefulWidget {
   const BetterReadingPage({super.key});
@@ -13,7 +14,7 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
   final TextEditingController _textController = TextEditingController();
   int _wordCount = 0;
   static const int _maxWords = 150;
-  final GeminiNanoService geminiNanoService = GeminiNanoService();
+  final GeminiNanoServiceWithMetrics geminiNanoService = GeminiNanoServiceWithMetrics();
   EnjolivationSteps step = EnjolivationSteps.WAITING_FOR_INPUT;
   String userInput = "";
   String developpedIteration = "";
@@ -52,9 +53,7 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
       userInput = _textController.text.trim();
       step = EnjolivationSteps.DEVELOPPING;
     });
-    geminiNanoService.reformulate(userInput, GeminiReformulate.DEVELOP).then((
-      firstIteration,
-    ) {
+    geminiNanoService.reformulate(userInput, GeminiReformulate.DEVELOP).then((firstIteration) {
       setState(() {
         developpedIteration = firstIteration;
         step = EnjolivationSteps.DYNAMISING;
@@ -64,9 +63,7 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
   }
 
   void _dynamising(String firstIteration) {
-    geminiNanoService.reformulate(firstIteration, GeminiReformulate.DYNAMISE).then((
-      dynamised,
-    ) {
+    geminiNanoService.reformulate(firstIteration, GeminiReformulate.DYNAMISE).then((dynamised) {
       setState(() {
         dynamisedText = dynamised;
         step = EnjolivationSteps.ADDING_EMOJIS;
@@ -76,9 +73,7 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
   }
 
   void _emojify(String dynamised) {
-    geminiNanoService.reformulate(dynamised, GeminiReformulate.EMOJIFY).then((
-      emojiText,
-    ) {
+    geminiNanoService.reformulate(dynamised, GeminiReformulate.EMOJIFY).then((emojiText) {
       setState(() {
         finalContent = emojiText;
         step = EnjolivationSteps.READY;
@@ -122,10 +117,7 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
               // Contenu principal
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 20,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -158,11 +150,7 @@ class _BetterReadingPageState extends State<BetterReadingPage> {
                         // Bouton Enjoliver
                         _EnjolliverButton(
                           loading: step == EnjolivationSteps.DEVELOPPING,
-                          onPressed:
-                              _textController.text.trim().isNotEmpty &&
-                                  !isOverLimit
-                              ? _onEnjoliver
-                              : null,
+                          onPressed: _textController.text.trim().isNotEmpty && !isOverLimit ? _onEnjoliver : null,
                         ),
                       ],
 
@@ -225,11 +213,7 @@ class _HeaderWidget extends StatelessWidget {
           const Expanded(
             child: Text(
               'Enjolivation',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
               textAlign: TextAlign.center,
             ),
           ),
@@ -257,11 +241,7 @@ class _InstructionWidget extends StatelessWidget {
           const SizedBox(height: 16),
           const Text(
             'Racontez-nous un moment de votre journée',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF8B4513),
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -296,20 +276,8 @@ class _TextInputWidget extends StatelessWidget {
             color: enabled ? Colors.white : Colors.grey,
             borderRadius: BorderRadius.circular(15),
             boxShadow: enabled
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                ? [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))]
+                : [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 5, offset: const Offset(0, 2))],
           ),
           child: TextField(
             controller: controller,
@@ -324,19 +292,12 @@ class _TextInputWidget extends StatelessWidget {
                 fontSize: 16,
                 fontStyle: enabled ? FontStyle.normal : FontStyle.italic,
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide.none,
-              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
               contentPadding: const EdgeInsets.all(20),
               filled: true,
               fillColor: enabled ? Colors.white : Colors.grey[200],
             ),
-            style: TextStyle(
-              fontSize: 16,
-              color: enabled ? const Color(0xFF8B4513) : Colors.grey[600],
-              height: 1.5,
-            ),
+            style: TextStyle(fontSize: 16, color: enabled ? const Color(0xFF8B4513) : Colors.grey[600], height: 1.5),
           ),
         ),
         const SizedBox(height: 12),
@@ -354,11 +315,7 @@ class _TextInputWidget extends StatelessWidget {
             if (isOverLimit)
               const Text(
                 'Limite dépassée',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.red, fontWeight: FontWeight.bold),
               ),
           ],
         ),
@@ -381,20 +338,10 @@ class _EnjolliverButton extends StatelessWidget {
       height: 56,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        gradient: onPressed != null
-            ? const LinearGradient(
-                colors: [Color(0xFFD2691E), Color(0xFFFF8C00)],
-              )
-            : null,
+        gradient: onPressed != null ? const LinearGradient(colors: [Color(0xFFD2691E), Color(0xFFFF8C00)]) : null,
         color: onPressed == null ? Colors.grey[400] : null,
         boxShadow: onPressed != null
-            ? [
-                BoxShadow(
-                  color: Colors.orange.withValues(alpha: 0.4),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ]
+            ? [BoxShadow(color: Colors.orange.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 6))]
             : null,
       ),
       child: Material(
@@ -412,11 +359,7 @@ class _EnjolliverButton extends StatelessWidget {
                 SizedBox(width: 12),
                 Text(
                   loading ? 'Enjolivation en cours...' : 'Enjoliver',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ],
             ),
@@ -427,13 +370,7 @@ class _EnjolliverButton extends StatelessWidget {
   }
 }
 
-enum EnjolivationSteps {
-  WAITING_FOR_INPUT,
-  DEVELOPPING,
-  DYNAMISING,
-  ADDING_EMOJIS,
-  READY,
-}
+enum EnjolivationSteps { WAITING_FOR_INPUT, DEVELOPPING, DYNAMISING, ADDING_EMOJIS, READY }
 
 // Widget privé pour le bouton Recommencer
 class _RestartButton extends StatelessWidget {
@@ -448,16 +385,8 @@ class _RestartButton extends StatelessWidget {
       height: 56,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.green.withValues(alpha: 0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        gradient: const LinearGradient(colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)]),
+        boxShadow: [BoxShadow(color: Colors.green.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 6))],
       ),
       child: Material(
         color: Colors.transparent,
@@ -472,11 +401,7 @@ class _RestartButton extends StatelessWidget {
                 SizedBox(width: 12),
                 Text(
                   'Recommencer',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ],
             ),
