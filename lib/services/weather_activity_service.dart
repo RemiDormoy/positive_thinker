@@ -1,11 +1,19 @@
 import 'dart:convert';
+
 import 'package:flutter/services.dart';
-import 'package:positive_thinker/gemini_nano_service.dart';
+import 'package:positive_thinker/models/activite_suggestion.dart';
+import 'package:positive_thinker/services/gemini_nano_service_with_metrics.dart';
+
 import '../models/activite.dart';
 
 class WeatherActivityService {
+  final GeminiNanoServiceWithMetrics _geminiNanoService;
+
   List<Activite>? _listeActivites;
   String _lastPrompt = '';
+
+  WeatherActivityService({required GeminiNanoServiceWithMetrics geminiNanoService})
+    : _geminiNanoService = geminiNanoService;
 
   String get lastPrompt => _lastPrompt;
 
@@ -15,13 +23,9 @@ class WeatherActivityService {
     }
 
     try {
-      final String jsonString = await rootBundle.loadString(
-        'assets/activites.json',
-      );
+      final String jsonString = await rootBundle.loadString('assets/activites.json');
       final List<dynamic> jsonData = json.decode(jsonString);
-      _listeActivites = jsonData
-          .map((json) => Activite.fromJson(json))
-          .toList();
+      _listeActivites = jsonData.map((json) => Activite.fromJson(json)).toList();
       return _listeActivites!;
     } catch (e) {
       throw Exception('Erreur lors du chargement des activités: $e');
@@ -33,13 +37,10 @@ class WeatherActivityService {
     double temperatureMin,
     double temperatureMax,
   ) async {
-    final geminiNanoService = GeminiNanoService();
-    await geminiNanoService.initialize();
+    await _geminiNanoService.initialize();
 
     final activites = await listeActivites;
-    final activitesString = activites
-        .map((a) => '- ${a.titre}: ${a.description} (${a.conditions})')
-        .join('\n');
+    final activitesString = activites.map((a) => '- ${a.titre}: ${a.description} (${a.conditions})').join('\n');
 
     final prompt =
         """ 
@@ -62,20 +63,24 @@ class WeatherActivityService {
     """;
 
     _lastPrompt = prompt;
-    
-    final response = await geminiNanoService.generateResponse(prompt);
-    
+
+    final response = await _geminiNanoService.generateResponse(prompt);
+
     try {
       // Nettoyer la réponse pour extraire uniquement le JSON
       final cleanedResponse = _cleanJsonResponse(response);
-      
+
       // Parser la réponse JSON nettoyée
       final List<dynamic> jsonList = json.decode(cleanedResponse);
-      return jsonList.map((json) => ActiviteSuggestion(
-        titre: json['titre'] as String,
-        description: json['description'] as String,
-        explication: json['explication'] as String,
-      )).toList();
+      return jsonList
+          .map(
+            (json) => ActiviteSuggestion(
+              titre: json['titre'] as String,
+              description: json['description'] as String,
+              explication: json['explication'] as String,
+            ),
+          )
+          .toList();
     } catch (e) {
       // En cas d'erreur de parsing, retourner une activité par défaut
       return [
@@ -87,30 +92,18 @@ class WeatherActivityService {
       ];
     }
   }
-  
+
   String _cleanJsonResponse(String response) {
     // Trouver le premier "[" et le dernier "]"
     final firstBracket = response.indexOf('[');
     final lastBracket = response.lastIndexOf(']');
-    
+
     // Si on ne trouve pas les crochets, retourner la réponse telle quelle
     if (firstBracket == -1 || lastBracket == -1 || firstBracket >= lastBracket) {
       return response;
     }
-    
+
     // Extraire uniquement la partie JSON entre les crochets (inclus)
     return response.substring(firstBracket, lastBracket + 1);
   }
-}
-
-class ActiviteSuggestion {
-  final String titre;
-  final String description;
-  final String explication;
-
-  ActiviteSuggestion({
-    required this.titre,
-    required this.description,
-    required this.explication,
-  });
 }

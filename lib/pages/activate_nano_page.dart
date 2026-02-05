@@ -11,10 +11,7 @@ class ActivateNanoPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Activer Gemini Nano',
-          style: TextStyle(
-            color: Color(0xFF8B4513),
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Color(0xFF8B4513), fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFFF5E6D3),
         iconTheme: const IconThemeData(color: Color(0xFF8B4513)),
@@ -37,10 +34,8 @@ class ActivateNanoPage extends StatelessWidget {
                 const SizedBox(height: 30),
                 _InstructionStepWidget(
                   stepNumber: 1,
-                  title:
-                      'Mettez à jour votre navigateur si il n\'est pas à jour',
-                  description:
-                      'Assurez-vous d\'avoir Chrome 127 ou plus récent',
+                  title: 'Mettez à jour votre navigateur si il n\'est pas à jour',
+                  description: 'Assurez-vous d\'avoir Chrome 127 ou plus récent',
                   actionText: null,
                   chromeUrl: null,
                 ),
@@ -48,11 +43,9 @@ class ActivateNanoPage extends StatelessWidget {
                 _InstructionStepWidget(
                   stepNumber: 2,
                   title: 'Activer le flags Optimization Guide On Device',
-                  description:
-                      'Mettre la valeur à "Enabled BypassPerfRequirement"',
+                  description: 'Mettre la valeur à "Enabled BypassPerfRequirement"',
                   actionText: 'Ouvrir le flag',
-                  chromeUrl:
-                      'chrome://flags/#optimization-guide-on-device-model',
+                  chromeUrl: 'chrome://flags/#optimization-guide-on-device-model',
                   additionalSteps: [],
                 ),
                 const SizedBox(height: 20),
@@ -86,8 +79,7 @@ class ActivateNanoPage extends StatelessWidget {
                 _InstructionStepWidget(
                   stepNumber: 6,
                   title: 'Redémarrer Chrome',
-                  description:
-                  'Relancez complètement votre navigateur pour appliquer les modifications',
+                  description: 'Relancez complètement votre navigateur pour appliquer les modifications',
                   actionText: 'Plus d\'infos',
                   isRestartStep: true,
                 ),
@@ -134,8 +126,7 @@ class ActivateNanoPage extends StatelessWidget {
                 _InstructionStepWidget(
                   stepNumber: 11,
                   title: 'Redémarrer Chrome',
-                  description:
-                  'Relancez complètement votre navigateur pour appliquer les modifications',
+                  description: 'Relancez complètement votre navigateur pour appliquer les modifications',
                   actionText: 'Plus d\'infos',
                   isRestartStep: true,
                 ),
@@ -143,8 +134,7 @@ class ActivateNanoPage extends StatelessWidget {
                 _InstructionStepWidget(
                   stepNumber: 12,
                   title: "Essayez d'utiliser le modèle depuis la console",
-                  description:
-                      'Ça ne marchera pas mais ça déclenchera le téléchargement du modèle',
+                  description: 'Ça ne marchera pas mais ça déclenchera le téléchargement du modèle',
                   actionText: 'Activez le modèle',
                   isCodeStep: true,
                   chromeUrl: """
@@ -162,8 +152,7 @@ await LanguageModel.create({
                 _InstructionStepWidget(
                   stepNumber: 13,
                   title: 'Forcer le téléchargement du modèle',
-                  description:
-                      'Clickez sur "Rechercher des mises à jour" pour "Optimization Guide On Device Model"',
+                  description: 'Clickez sur "Rechercher des mises à jour" pour "Optimization Guide On Device Model"',
                   actionText: 'Ouvrir les composants',
                   chromeUrl: 'chrome://components/',
                   additionalSteps: [
@@ -176,8 +165,7 @@ await LanguageModel.create({
                 _InstructionStepWidget(
                   stepNumber: 14,
                   title: 'Attendez la fin du téléchargement',
-                  description:
-                  'Cela peut prendre entre 5 et 10 minutes',
+                  description: 'Cela peut prendre entre 5 et 10 minutes',
                   additionalSteps: [
                     '(Optionel) Faites un baby foot en attendant',
                     '(Optionel) Faites une pause café en attendant',
@@ -187,8 +175,7 @@ await LanguageModel.create({
                 _InstructionStepWidget(
                   stepNumber: 15,
                   title: 'Vérifier l\'activation',
-                  description:
-                      'Testez si Gemini Nano est disponible dans la console',
+                  description: 'Testez si Gemini Nano est disponible dans la console',
                   actionText: 'Tester maintenant',
                   chromeUrl: 'await LanguageModel.availability()',
                   isCodeStep: true,
@@ -252,21 +239,10 @@ class _InstructionStepWidget extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF8B4513),
-                        ),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        description,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF8B4513),
-                          height: 1.4,
-                        ),
-                      ),
+                      Text(description, style: const TextStyle(fontSize: 14, color: Color(0xFF8B4513), height: 1.4)),
                     ],
                   ),
                 ),
@@ -275,9 +251,7 @@ class _InstructionStepWidget extends StatelessWidget {
 
             if (additionalSteps != null) ...[
               const SizedBox(height: 16),
-              ...additionalSteps!.map(
-                (step) => _AdditionalStepWidget(step: step),
-              ),
+              ...additionalSteps!.map((step) => _AdditionalStepWidget(step: step)),
             ],
 
             if (actionText != null) ...[
@@ -296,7 +270,6 @@ class _InstructionStepWidget extends StatelessWidget {
   }
 
   void _handleAction(BuildContext context) async {
-
     if (isCodeStep) {
       _showCodeDialog(context, chromeUrl!);
       return;
@@ -308,10 +281,14 @@ class _InstructionStepWidget extends StatelessWidget {
         if (await canLaunchUrl(uri)) {
           await launchUrl(uri);
         } else {
-          _showUrlDialog(context, chromeUrl!);
+          if (context.mounted) {
+            _showUrlDialog(context, chromeUrl!);
+          }
         }
       } catch (e) {
-        _showUrlDialog(context, chromeUrl!);
+        if (context.mounted) {
+          _showUrlDialog(context, chromeUrl!);
+        }
       }
     }
   }
@@ -323,10 +300,7 @@ class _InstructionStepWidget extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text(
           'Copier l\'URL',
-          style: TextStyle(
-            color: Color(0xFF8B4513),
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Color(0xFF8B4513), fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -339,20 +313,13 @@ class _InstructionStepWidget extends StatelessWidget {
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5E6D3),
-                borderRadius: BorderRadius.circular(8),
-              ),
+              decoration: BoxDecoration(color: const Color(0xFFF5E6D3), borderRadius: BorderRadius.circular(8)),
               child: Row(
                 children: [
                   Expanded(
                     child: SelectableText(
                       url,
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 12,
-                        color: Color(0xFF8B4513),
-                      ),
+                      style: const TextStyle(fontFamily: 'monospace', fontSize: 12, color: Color(0xFF8B4513)),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -369,17 +336,10 @@ class _InstructionStepWidget extends StatelessWidget {
                         );
                       }
                     },
-                    icon: const Icon(
-                      Icons.copy,
-                      color: Color(0xFFD2691E),
-                      size: 20,
-                    ),
+                    icon: const Icon(Icons.copy, color: Color(0xFFD2691E), size: 20),
                     tooltip: 'Copier l\'URL',
                     padding: const EdgeInsets.all(4),
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                   ),
                 ],
               ),
@@ -389,10 +349,7 @@ class _InstructionStepWidget extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Fermer',
-              style: TextStyle(color: Color(0xFFD2691E)),
-            ),
+            child: const Text('Fermer', style: TextStyle(color: Color(0xFFD2691E))),
           ),
         ],
       ),
@@ -406,36 +363,23 @@ class _InstructionStepWidget extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text(
           'Ouvrez la console développeur avec F12',
-          style: TextStyle(
-            color: Color(0xFF8B4513),
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Color(0xFF8B4513), fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Copiez cette commande dans la console',
-              style: TextStyle(color: Color(0xFF8B4513)),
-            ),
+            const Text('Copiez cette commande dans la console', style: TextStyle(color: Color(0xFF8B4513))),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5E6D3),
-                borderRadius: BorderRadius.circular(8),
-              ),
+              decoration: BoxDecoration(color: const Color(0xFFF5E6D3), borderRadius: BorderRadius.circular(8)),
               child: Row(
                 children: [
                   Expanded(
                     child: SelectableText(
                       url,
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 12,
-                        color: Color(0xFF8B4513),
-                      ),
+                      style: const TextStyle(fontFamily: 'monospace', fontSize: 12, color: Color(0xFF8B4513)),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -452,17 +396,10 @@ class _InstructionStepWidget extends StatelessWidget {
                         );
                       }
                     },
-                    icon: const Icon(
-                      Icons.copy,
-                      color: Color(0xFFD2691E),
-                      size: 20,
-                    ),
+                    icon: const Icon(Icons.copy, color: Color(0xFFD2691E), size: 20),
                     tooltip: 'Copier l\'URL',
                     padding: const EdgeInsets.all(4),
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                   ),
                 ],
               ),
@@ -472,10 +409,7 @@ class _InstructionStepWidget extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Fermer',
-              style: TextStyle(color: Color(0xFFD2691E)),
-            ),
+            child: const Text('Fermer', style: TextStyle(color: Color(0xFFD2691E))),
           ),
         ],
       ),
@@ -494,19 +428,13 @@ class _StepNumberWidget extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFD2691E), Color(0xFFFF8C00)],
-        ),
+        gradient: LinearGradient(colors: [Color(0xFFD2691E), Color(0xFFFF8C00)]),
         shape: BoxShape.circle,
       ),
       child: Center(
         child: Text(
           stepNumber.toString(),
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
     );
@@ -527,21 +455,10 @@ class _AdditionalStepWidget extends StatelessWidget {
         children: [
           const Text(
             '• ',
-            style: TextStyle(
-              color: Color(0xFFD2691E),
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: Color(0xFFD2691E), fontWeight: FontWeight.bold, fontSize: 16),
           ),
           Expanded(
-            child: Text(
-              step,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF8B4513),
-                height: 1.4,
-              ),
-            ),
+            child: Text(step, style: const TextStyle(fontSize: 14, color: Color(0xFF8B4513), height: 1.4)),
           ),
         ],
       ),
@@ -568,22 +485,15 @@ class _ActionButtonWidget extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: onPressed,
-        style:
-            ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ).copyWith(
-              backgroundColor: WidgetStateProperty.all(Colors.transparent),
-            ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ).copyWith(backgroundColor: WidgetStateProperty.all(Colors.transparent)),
         child: Ink(
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFD2691E), Color(0xFFFF8C00)],
-            ),
+            gradient: const LinearGradient(colors: [Color(0xFFD2691E), Color(0xFFFF8C00)]),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Container(
@@ -592,19 +502,11 @@ class _ActionButtonWidget extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  isRestartStep ? Icons.refresh : Icons.open_in_new,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                Icon(isRestartStep ? Icons.refresh : Icons.open_in_new, color: Colors.white, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   text,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ],
             ),
@@ -633,11 +535,7 @@ class _TroubleshootingWidget extends StatelessWidget {
                 SizedBox(width: 12),
                 Text(
                   'Problèmes fréquents',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF8B4513),
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
                 ),
               ],
             ),
@@ -649,13 +547,11 @@ class _TroubleshootingWidget extends StatelessWidget {
             ),
             _TroubleshootingItemWidget(
               problem: 'Les flags ne sont pas disponibles',
-              solution:
-                  'Votre version de Chrome est peut-être trop ancienne. Mettez à jour vers Chrome 127+.',
+              solution: 'Votre version de Chrome est peut-être trop ancienne. Mettez à jour vers Chrome 127+.',
             ),
             _TroubleshootingItemWidget(
               problem: 'L\'API retourne "not-supported"',
-              solution:
-                  'Assurez-vous d\'avoir redémarré Chrome après avoir activé les flags.',
+              solution: 'Assurez-vous d\'avoir redémarré Chrome après avoir activé les flags.',
             ),
           ],
         ),
@@ -668,10 +564,7 @@ class _TroubleshootingItemWidget extends StatelessWidget {
   final String problem;
   final String solution;
 
-  const _TroubleshootingItemWidget({
-    required this.problem,
-    required this.solution,
-  });
+  const _TroubleshootingItemWidget({required this.problem, required this.solution});
 
   @override
   Widget build(BuildContext context) {
@@ -682,21 +575,10 @@ class _TroubleshootingItemWidget extends StatelessWidget {
         children: [
           Text(
             '❓ $problem',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF8B4513),
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
           ),
           const SizedBox(height: 4),
-          Text(
-            '💡 $solution',
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF8B4513),
-              height: 1.4,
-            ),
-          ),
+          Text('💡 $solution', style: const TextStyle(fontSize: 14, color: Color(0xFF8B4513), height: 1.4)),
         ],
       ),
     );
@@ -708,30 +590,19 @@ class _FooterWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(12),
-      ),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(12)),
       child: Column(
         children: [
           const Icon(Icons.check_circle, color: Colors.green, size: 32),
           const SizedBox(height: 12),
           const Text(
             'Une fois ces étapes terminées',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF8B4513),
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
           ),
           const SizedBox(height: 8),
           const Text(
             'Vous pourrez profiter de toutes les fonctionnalités IA de Positive Thinker directement dans votre navigateur !',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF8B4513),
-              height: 1.4,
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF8B4513), height: 1.4),
             textAlign: TextAlign.center,
           ),
         ],

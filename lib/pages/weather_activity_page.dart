@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:positive_thinker/models/activite_suggestion.dart';
+import 'package:positive_thinker/services/gemini_nano_service_with_metrics.dart';
+import 'package:positive_thinker/widgets/performance_metrics_widget.dart';
+
 import '../models/weather_data.dart';
-import '../services/weather_service.dart';
 import '../services/weather_activity_service.dart';
-import '../widgets/expandable_content_widget.dart';
+import '../services/weather_service.dart';
 
 class WeatherActivityPage extends StatefulWidget {
   const WeatherActivityPage({super.key});
@@ -13,6 +16,7 @@ class WeatherActivityPage extends StatefulWidget {
 
 class _WeatherActivityPageState extends State<WeatherActivityPage> {
   final WeatherService _weatherService = WeatherService();
+  final GeminiNanoServiceWithMetrics _geminiNanoServiceWithMetrics = GeminiNanoServiceWithMetrics();
   Future<WeatherData>? _weatherFuture;
   bool _isEditingWeather = false;
   WeatherData? _customWeatherData;
@@ -21,6 +25,7 @@ class _WeatherActivityPageState extends State<WeatherActivityPage> {
   void initState() {
     super.initState();
     _weatherFuture = _weatherService.fetchWeatherData();
+    _geminiNanoServiceWithMetrics.initialize();
   }
 
   void _refreshWeather() {
@@ -73,24 +78,35 @@ class _WeatherActivityPageState extends State<WeatherActivityPage> {
       appBar: AppBar(
         title: const Text(
           'Regarde comme il fait beau dehors',
-          style: TextStyle(
-            color: Color(0xFF8B4513),
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Color(0xFF8B4513), fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFFF5E6D3),
         iconTheme: const IconThemeData(color: Color(0xFF8B4513)),
         elevation: 0,
         actions: [
+          IconButton(icon: Icon(_isEditingWeather ? Icons.close : Icons.edit), onPressed: _toggleWeatherEdit),
+          if (!_isEditingWeather) IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshWeather),
           IconButton(
-            icon: Icon(_isEditingWeather ? Icons.close : Icons.edit),
-            onPressed: _toggleWeatherEdit,
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: const Color(0xFFF5E6D3),
+                  contentPadding: EdgeInsets.zero,
+                  content: SingleChildScrollView(
+                    child: PerformanceMetricsWidget(tracker: _geminiNanoServiceWithMetrics.tracker),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Fermer', style: TextStyle(color: Color(0xFF8B4513))),
+                    ),
+                  ],
+                ),
+              );
+            },
+            icon: Icon(Icons.square_foot),
           ),
-          if (!_isEditingWeather)
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: _refreshWeather,
-            ),
         ],
       ),
       body: Container(
@@ -98,10 +114,7 @@ class _WeatherActivityPageState extends State<WeatherActivityPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF5E6D3),
-              Color(0xFFE8B4A0),
-            ],
+            colors: [Color(0xFFF5E6D3), Color(0xFFE8B4A0)],
           ),
         ),
         child: _isEditingWeather
@@ -114,19 +127,18 @@ class _WeatherActivityPageState extends State<WeatherActivityPage> {
                   }
 
                   if (snapshot.hasError) {
-                    return _ErrorWidget(
-                      error: snapshot.error.toString(),
-                      onRetry: _refreshWeather,
-                    );
+                    return _ErrorWidget(error: snapshot.error.toString(), onRetry: _refreshWeather);
                   }
 
                   if (!snapshot.hasData) {
                     return const _EmptyStateWidget();
                   }
 
-                  // Utiliser la météo personnalisée si elle existe, sinon la météo réelle
                   final weatherToUse = _customWeatherData ?? snapshot.data!;
-                  return _WeatherContent(weatherData: weatherToUse);
+                  return _WeatherContent(
+                    weatherData: weatherToUse,
+                    geminiNanoServiceWithMetrics: _geminiNanoServiceWithMetrics,
+                  );
                 },
               ),
       ),
@@ -136,8 +148,9 @@ class _WeatherActivityPageState extends State<WeatherActivityPage> {
 
 class _WeatherContent extends StatelessWidget {
   final WeatherData weatherData;
+  final GeminiNanoServiceWithMetrics geminiNanoServiceWithMetrics;
 
-  const _WeatherContent({required this.weatherData});
+  const _WeatherContent({required this.weatherData, required this.geminiNanoServiceWithMetrics});
 
   @override
   Widget build(BuildContext context) {
@@ -146,18 +159,18 @@ class _WeatherContent extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 20),
-          
-          // Widget principal météo
+
           _MainWeatherCard(weatherData: weatherData),
-          
+
           const SizedBox(height: 30),
-          
-          // Suggestions d'activités
-          _ActivitySuggestionsWidget(weatherData: weatherData),
-          
+
+          _ActivitySuggestionsWidget(
+            weatherData: weatherData,
+            geminiNanoServiceWithMetrics: geminiNanoServiceWithMetrics,
+          ),
+
           const SizedBox(height: 30),
-          
-          // Message motivational
+
           _MotivationalMessageWidget(weatherData: weatherData),
         ],
       ),
@@ -188,25 +201,18 @@ class _MainWeatherCard extends StatelessWidget {
         child: Column(
           children: [
             // Emoji et description météo
-            Text(
-              weatherData.weatherEmoji,
-              style: const TextStyle(fontSize: 80),
-            ),
-            
+            Text(weatherData.weatherEmoji, style: const TextStyle(fontSize: 80)),
+
             const SizedBox(height: 16),
-            
+
             Text(
               weatherData.weatherDescription,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-              ),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Températures
             _TemperatureRow(weatherData: weatherData),
           ],
@@ -232,11 +238,7 @@ class _TemperatureRow extends StatelessWidget {
           icon: Icons.thermostat,
           color: Colors.blue,
         ),
-        Container(
-          height: 60,
-          width: 2,
-          color: const Color(0xFFE0E0E0),
-        ),
+        Container(height: 60, width: 2, color: const Color(0xFFE0E0E0)),
         _TemperatureWidget(
           label: 'Max',
           temperature: weatherData.temperatureMax,
@@ -254,12 +256,7 @@ class _TemperatureWidget extends StatelessWidget {
   final IconData icon;
   final Color color;
 
-  const _TemperatureWidget({
-    required this.label,
-    required this.temperature,
-    required this.icon,
-    required this.color,
-  });
+  const _TemperatureWidget({required this.label, required this.temperature, required this.icon, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -269,20 +266,12 @@ class _TemperatureWidget extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Color(0xFF8B4513),
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(fontSize: 16, color: Color(0xFF8B4513), fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 4),
         Text(
           '${temperature.round()}°C',
-          style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF8B4513),
-          ),
+          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
         ),
       ],
     );
@@ -291,13 +280,14 @@ class _TemperatureWidget extends StatelessWidget {
 
 class _ActivitySuggestionsWidget extends StatelessWidget {
   final WeatherData weatherData;
+  final GeminiNanoServiceWithMetrics geminiNanoServiceWithMetrics;
 
-  const _ActivitySuggestionsWidget({required this.weatherData});
+  const _ActivitySuggestionsWidget({required this.weatherData, required this.geminiNanoServiceWithMetrics});
 
   @override
   Widget build(BuildContext context) {
-    final WeatherActivityService activityService = WeatherActivityService();
-    
+    final weatherActivityService = WeatherActivityService(geminiNanoService: geminiNanoServiceWithMetrics);
+
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
@@ -308,17 +298,13 @@ class _ActivitySuggestionsWidget extends StatelessWidget {
           children: [
             const Text(
               '✨ Activités suggérées',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             FutureBuilder<List<ActiviteSuggestion>>(
-              future: activityService.getSuggestedActivities(
+              future: weatherActivityService.getSuggestedActivities(
                 weatherData.weatherDescription,
                 weatherData.temperatureMin,
                 weatherData.temperatureMax,
@@ -328,48 +314,36 @@ class _ActivitySuggestionsWidget extends StatelessWidget {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(20.0),
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B4513)),
-                      ),
+                      child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B4513))),
                     ),
                   );
                 }
-                
+
                 if (snapshot.hasError) {
                   return Container(
                     padding: const EdgeInsets.all(16.0),
                     child: const Text(
                       'Erreur lors du chargement des activités',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF8B4513),
-                        fontStyle: FontStyle.italic,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Color(0xFF8B4513), fontStyle: FontStyle.italic),
                       textAlign: TextAlign.center,
                     ),
                   );
                 }
-                
+
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Container(
                     padding: const EdgeInsets.all(16.0),
                     child: const Text(
                       'Aucune activité disponible pour le moment',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF8B4513),
-                        fontStyle: FontStyle.italic,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Color(0xFF8B4513), fontStyle: FontStyle.italic),
                       textAlign: TextAlign.center,
                     ),
                   );
                 }
-                
+
                 return Column(
                   children: [
-                    ...snapshot.data!
-                        .map((activity) => _ActivitySuggestionItem(activiteSuggestion: activity))
-                        .toList(),
+                    ...snapshot.data!.map((activity) => _ActivitySuggestionItem(activiteSuggestion: activity)),
                   ],
                 );
               },
@@ -404,104 +378,41 @@ class _ActivitySuggestionItem extends StatelessWidget {
               Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFD2691E),
-                  shape: BoxShape.circle,
-                ),
+                decoration: const BoxDecoration(color: Color(0xFFD2691E), shape: BoxShape.circle),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   activiteSuggestion.titre,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF8B4513),
-                  ),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
                 ),
               ),
             ],
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           Text(
             activiteSuggestion.description,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF8B4513),
-              height: 1.4,
-            ),
+            style: const TextStyle(fontSize: 14, color: Color(0xFF8B4513), height: 1.4),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFE4B5),
-              borderRadius: BorderRadius.circular(8),
-            ),
+            decoration: BoxDecoration(color: const Color(0xFFFFE4B5), borderRadius: BorderRadius.circular(8)),
             child: Row(
               children: [
-                const Icon(
-                  Icons.lightbulb_outline,
-                  size: 16,
-                  color: Color(0xFFD2691E),
-                ),
+                const Icon(Icons.lightbulb_outline, size: 16, color: Color(0xFFD2691E)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     activiteSuggestion.explication,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF8B4513),
-                      fontStyle: FontStyle.italic,
-                    ),
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF8B4513), fontStyle: FontStyle.italic),
                   ),
                 ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ActivityItem extends StatelessWidget {
-  final String activity;
-
-  const _ActivityItem({required this.activity});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5E6D3),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD2691E), width: 1),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: Color(0xFFD2691E),
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              activity,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF8B4513),
-              ),
             ),
           ),
         ],
@@ -544,31 +455,19 @@ class _MotivationalMessageWidget extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFFE4B5),
-              Color(0xFFFFF8DC),
-            ],
+            colors: [Color(0xFFFFE4B5), Color(0xFFFFF8DC)],
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(
-              Icons.favorite,
-              color: Color(0xFFD2691E),
-              size: 32,
-            ),
-            
+            const Icon(Icons.favorite, color: Color(0xFFD2691E), size: 32),
+
             const SizedBox(height: 16),
-            
+
             Text(
               _getMotivationalMessage(),
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF8B4513),
-                height: 1.5,
-                fontStyle: FontStyle.italic,
-              ),
+              style: const TextStyle(fontSize: 16, color: Color(0xFF8B4513), height: 1.5, fontStyle: FontStyle.italic),
               textAlign: TextAlign.center,
             ),
           ],
@@ -587,17 +486,9 @@ class _LoadingWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B4513)),
-          ),
+          CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B4513))),
           SizedBox(height: 16),
-          Text(
-            'Récupération de la météo...',
-            style: TextStyle(
-              fontSize: 16,
-              color: Color(0xFF8B4513),
-            ),
-          ),
+          Text('Récupération de la météo...', style: TextStyle(fontSize: 16, color: Color(0xFF8B4513))),
         ],
       ),
     );
@@ -608,10 +499,7 @@ class _ErrorWidget extends StatelessWidget {
   final String error;
   final VoidCallback onRetry;
 
-  const _ErrorWidget({
-    required this.error,
-    required this.onRetry,
-  });
+  const _ErrorWidget({required this.error, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -621,37 +509,26 @@ class _ErrorWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.cloud_off,
-              size: 64,
-              color: Color(0xFF8B4513),
-            ),
-            
+            const Icon(Icons.cloud_off, size: 64, color: Color(0xFF8B4513)),
+
             const SizedBox(height: 16),
-            
+
             const Text(
               'Oops ! Impossible de récupérer la météo',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             const Text(
               'Vérifiez votre connexion internet et réessayez.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 14, color: Color(0xFF8B4513)),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
@@ -659,13 +536,8 @@ class _ErrorWidget extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFD2691E),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
           ],
@@ -686,28 +558,17 @@ class _EmptyStateWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.wb_cloudy_outlined,
-              size: 64,
-              color: Color(0xFF8B4513),
-            ),
+            Icon(Icons.wb_cloudy_outlined, size: 64, color: Color(0xFF8B4513)),
             SizedBox(height: 16),
             Text(
               'Aucune donnée météo disponible',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8),
             Text(
               'Revenez plus tard pour découvrir le temps qu\'il fait !',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF8B4513),
-              ),
+              style: TextStyle(fontSize: 14, color: Color(0xFF8B4513)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -746,7 +607,7 @@ class _WeatherEditFormState extends State<_WeatherEditForm> {
       child: Column(
         children: [
           const SizedBox(height: 40),
-          
+
           Card(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             elevation: 8,
@@ -763,38 +624,26 @@ class _WeatherEditFormState extends State<_WeatherEditForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(
-                    Icons.tune,
-                    size: 48,
-                    color: Color(0xFF8B4513),
-                  ),
-                  
+                  const Icon(Icons.tune, size: 48, color: Color(0xFF8B4513)),
+
                   const SizedBox(height: 16),
-                  
+
                   const Text(
                     'Personnaliser la météo',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF8B4513),
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Sélecteur de météo
                   const Text(
                     'Type de météo',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF8B4513),
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF8B4513)),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
@@ -806,20 +655,11 @@ class _WeatherEditFormState extends State<_WeatherEditForm> {
                       child: DropdownButton<String>(
                         value: _selectedWeather,
                         isExpanded: true,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF8B4513),
-                        ),
+                        style: const TextStyle(fontSize: 16, color: Color(0xFF8B4513)),
                         dropdownColor: const Color(0xFFF5E6D3),
-                        icon: const Icon(
-                          Icons.keyboard_arrow_down,
-                          color: Color(0xFF8B4513),
-                        ),
+                        icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF8B4513)),
                         items: _weatherOptions.map((String weather) {
-                          return DropdownMenuItem<String>(
-                            value: weather,
-                            child: Text(weather),
-                          );
+                          return DropdownMenuItem<String>(value: weather, child: Text(weather));
                         }).toList(),
                         onChanged: (String? newValue) {
                           if (newValue != null) {
@@ -831,21 +671,17 @@ class _WeatherEditFormState extends State<_WeatherEditForm> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Sélecteur de température
                   const Text(
                     'Température',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF8B4513),
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF8B4513)),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -857,15 +693,11 @@ class _WeatherEditFormState extends State<_WeatherEditForm> {
                       children: [
                         Text(
                           '${_temperature.round()}°C',
-                          style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF8B4513),
-                          ),
+                          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFF8B4513)),
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             activeTrackColor: const Color(0xFFD2691E),
@@ -873,10 +705,7 @@ class _WeatherEditFormState extends State<_WeatherEditForm> {
                             thumbColor: const Color(0xFF8B4513),
                             overlayColor: const Color(0xFFD2691E).withValues(alpha: 0.2),
                             valueIndicatorColor: const Color(0xFF8B4513),
-                            valueIndicatorTextStyle: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            valueIndicatorTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                           ),
                           child: Slider(
                             value: _temperature,
@@ -891,32 +720,20 @@ class _WeatherEditFormState extends State<_WeatherEditForm> {
                             },
                           ),
                         ),
-                        
+
                         const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              '-10°C',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF8B4513),
-                              ),
-                            ),
-                            Text(
-                              '40°C',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF8B4513),
-                              ),
-                            ),
+                            Text('-10°C', style: TextStyle(fontSize: 12, color: Color(0xFF8B4513))),
+                            Text('40°C', style: TextStyle(fontSize: 12, color: Color(0xFF8B4513))),
                           ],
                         ),
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Bouton Valider
                   ElevatedButton.icon(
                     onPressed: () {
@@ -925,21 +742,13 @@ class _WeatherEditFormState extends State<_WeatherEditForm> {
                     icon: const Icon(Icons.check),
                     label: const Text(
                       'Valider et générer les suggestions',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD2691E),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 4,
                     ),
                   ),
