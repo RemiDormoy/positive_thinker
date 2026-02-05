@@ -86,6 +86,27 @@ class _WeatherActivityPageState extends State<WeatherActivityPage> {
         actions: [
           IconButton(icon: Icon(_isEditingWeather ? Icons.close : Icons.edit), onPressed: _toggleWeatherEdit),
           if (!_isEditingWeather) IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshWeather),
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: const Color(0xFFF5E6D3),
+                  contentPadding: EdgeInsets.zero,
+                  content: SingleChildScrollView(
+                    child: PerformanceMetricsWidget(tracker: _geminiNanoServiceWithMetrics.tracker),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Fermer', style: TextStyle(color: Color(0xFF8B4513))),
+                    ),
+                  ],
+                ),
+              );
+            },
+            icon: Icon(Icons.square_foot),
+          ),
         ],
       ),
       body: Container(
@@ -137,10 +158,6 @@ class _WeatherContent extends StatelessWidget {
       padding: const EdgeInsets.all(24.0),
       child: Column(
         children: [
-          const SizedBox(height: 20),
-
-          PerformanceMetricsWidget(tracker: geminiNanoServiceWithMetrics.tracker),
-
           const SizedBox(height: 20),
 
           _MainWeatherCard(weatherData: weatherData),
@@ -326,7 +343,7 @@ class _ActivitySuggestionsWidget extends StatelessWidget {
 
                 return Column(
                   children: [
-                    ...snapshot.data!.map((activity) => _ActivitySuggestionItem(activiteSuggestion: activity)).toList(),
+                    ...snapshot.data!.map((activity) => _ActivitySuggestionItem(activiteSuggestion: activity)),
                   ],
                 );
               },

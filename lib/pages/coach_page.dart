@@ -59,6 +59,27 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
           "Coach Gnocchi",
           style: const TextStyle(color: Color(0xFF8B4513), fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: const Color(0xFFF5E6D3),
+                  contentPadding: EdgeInsets.zero,
+                  content: SingleChildScrollView(child: PerformanceMetricsWidget(tracker: geminiNanoService.tracker)),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Fermer', style: TextStyle(color: Color(0xFF8B4513))),
+                    ),
+                  ],
+                ),
+              );
+            },
+            icon: Icon(Icons.square_foot),
+          ),
+        ],
         backgroundColor: const Color(0xFFF5E6D3),
         iconTheme: const IconThemeData(color: Color(0xFF8B4513)),
         elevation: 0,
@@ -87,7 +108,6 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
             onSendMessage: _handleSendMessage,
             onImageTap: _handleImageSelection,
           ),
-          PerformanceMetricsWidget(tracker: geminiNanoService.tracker),
         ],
       ),
     );

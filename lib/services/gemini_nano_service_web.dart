@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'dart:js' as js;
+
+import 'package:flutter/cupertino.dart';
+
 import 'gemini_nano_service.dart' as main;
 
 class GeminiNanoService {
@@ -15,10 +16,12 @@ class GeminiNanoService {
     return _callWebMethod('summarize', input);
   }
 
-  Future<String> generateResponseWithImage(File input) async {
+  Future<String> generateResponseWithImage(dynamic input) async {
     try {
       debugPrint('début de l\'analyse de l\'image (web)');
-      final String imageResult = await _callWebMethod('imageDescription', input.path);
+      // Sur le web, input devrait être un String (chemin ou URL de l'image)
+      final String imagePath = input is String ? input : input.toString();
+      final String imageResult = await _callWebMethod('imageDescription', imagePath);
       debugPrint('imageResult : $imageResult');
       final finalPrompt = """Imagine que je t'envoie l'image avec la description suivante : $imageResult.
       Tu es un chien qui doit me faire voir la vie en positif.
@@ -36,7 +39,7 @@ class GeminiNanoService {
   Future<bool> initialize() async {
     try {
       final result = await _callWebMethod('initialize', null);
-      return result == 'true' || result == true;
+      return result == 'true';
     } catch (e) {
       debugPrint('Erreur initialisation web: $e');
       return false;
@@ -94,10 +97,10 @@ class GeminiNanoService {
         default:
           return "Méthode non supportée: $method";
       }
-      
+
       // Exécuter le code JavaScript et attendre le résultat
       final result = await _executeJavaScriptAsync(jsCode);
-      
+
       return result?.toString() ?? "Aucun résultat du service web";
     } catch (e) {
       debugPrint('Erreur lors de l\'appel web: $e');
@@ -108,9 +111,10 @@ class GeminiNanoService {
   /// Exécute du code JavaScript de façon asynchrone
   Future<dynamic> _executeJavaScriptAsync(String jsCode) async {
     final completer = Completer<dynamic>();
-    
+
     // Créer un wrapper qui gère l'asynchrone
-    final wrappedCode = '''
+    final wrappedCode =
+        '''
       (async function() {
         try {
           const result = await $jsCode;
@@ -120,7 +124,7 @@ class GeminiNanoService {
         }
       })();
     ''';
-    
+
     // Définir le callback Dart
     js.context['dartCallback'] = js.allowInterop((String status, dynamic result) {
       if (status == 'success') {
@@ -131,10 +135,10 @@ class GeminiNanoService {
       // Nettoyer le callback
       js.context['dartCallback'] = null;
     });
-    
+
     // Exécuter le code
     js.context.callMethod('eval', [wrappedCode]);
-    
+
     return completer.future;
   }
 }

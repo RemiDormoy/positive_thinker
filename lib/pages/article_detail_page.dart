@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:positive_thinker/services/gemini_nano_service.dart';
 import 'package:positive_thinker/services/gemini_nano_service_with_metrics.dart';
 import 'package:positive_thinker/widgets/performance_metrics_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -78,19 +77,8 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     geminiNanoService.generateResponse(prompt).then((tadaaaa) {
       setState(() {
         step = PositiveNewsStep.READY;
-        //beforeEmoji = tadaaaa;
         debugPrint("final content : $tadaaaa");
         finalContent = tadaaaa;
-      });
-      //_injectEmojis(tadaaaa);
-    });
-  }
-
-  _injectEmojis(String tadaa) {
-    geminiNanoService.reformulate(tadaa, GeminiReformulate.EMOJIFY).then((emojis) {
-      setState(() {
-        step = PositiveNewsStep.READY;
-        finalContent = emojis;
       });
     });
   }
@@ -110,40 +98,47 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
         backgroundColor: const Color(0xFFF5E6D3),
         iconTheme: const IconThemeData(color: Color(0xFF8B4513)),
         elevation: 0,
-      ),
-      body: Column(
-        children: [
-          PerformanceMetricsWidget(tracker: geminiNanoService.tracker),
-          Expanded(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFFF5E6D3), Color(0xFFE8B4A0)],
-                ),
-              ),
-              child: step == PositiveNewsStep.LOADING_CONTENT
-                  ? _LoadingContentFromInternetWidget()
-                  : step == PositiveNewsStep.SUMMURAZING_CONTENT
-                  ? _LoadingSummarizedContent()
-                  : step == PositiveNewsStep.TRANSLATING
-                  ? _TranslatingWidget()
-                  : step == PositiveNewsStep.EMOJIFICATION
-                  ? _EmojificationWidget()
-                  : step == PositiveNewsStep.ADDING_GOOD_VIBES
-                  ? _AddingGoodVibesWidget()
-                  : _Content(
-                      finalContent,
-                      articleDetail!,
-                      originalContent,
-                      originalSummary,
-                      firstTranslation,
-                      beforeEmoji,
+        actions: [
+          IconButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: const Color(0xFFF5E6D3),
+                  contentPadding: EdgeInsets.zero,
+                  content: SingleChildScrollView(child: PerformanceMetricsWidget(tracker: geminiNanoService.tracker)),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Fermer', style: TextStyle(color: Color(0xFF8B4513))),
                     ),
-            ),
+                  ],
+                ),
+              );
+            },
+            icon: Icon(Icons.square_foot),
           ),
         ],
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF5E6D3), Color(0xFFE8B4A0)],
+          ),
+        ),
+        child: step == PositiveNewsStep.LOADING_CONTENT
+            ? _LoadingContentFromInternetWidget()
+            : step == PositiveNewsStep.SUMMURAZING_CONTENT
+            ? _LoadingSummarizedContent()
+            : step == PositiveNewsStep.TRANSLATING
+            ? _TranslatingWidget()
+            : step == PositiveNewsStep.EMOJIFICATION
+            ? _EmojificationWidget()
+            : step == PositiveNewsStep.ADDING_GOOD_VIBES
+            ? _AddingGoodVibesWidget()
+            : _Content(finalContent, articleDetail!, originalContent, originalSummary, firstTranslation, beforeEmoji),
       ),
     );
   }
