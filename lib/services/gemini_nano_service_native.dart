@@ -38,7 +38,7 @@ class GeminiNanoService {
       debugPrint('imageResult : $imageResult');
       final finalPrompt = """Imagine que je t'envoie l'image avec la description suivante : $imageResult.
         Tu es un chien qui doit me faire voir la vie en positif.
-        Je veux que tu me la redécrive, en tant que chien qui parle français, en moins de 100 mots, et de manière beaucoup plus positive. 
+        Je veux que tu me la re-décrive, en tant que chien qui parle français, en moins de 100 mots, et de manière beaucoup plus positive. 
         """;
       final String result = await generateResponse(finalPrompt);
       return result;

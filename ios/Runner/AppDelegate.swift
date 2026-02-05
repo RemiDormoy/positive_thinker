@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import FoundationModels
+import Vision
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -176,12 +177,29 @@ import FoundationModels
           return
         }
         
-        // Note: Apple Foundation Models ne supporte pas directement l'analyse d'images
-        // Pour une vraie implémentation, il faudrait utiliser Vision Framework + Foundation Models
-        let session = LanguageModelSession()
-        let instructions = "Génère une description positive et inspirante d'une image basée sur le chemin fourni."
+        // Charger l'image depuis le chemin
+        guard let image = UIImage(contentsOfFile: imagePath) else {
+          DispatchQueue.main.async {
+            result(FlutterError(code: "IMAGE_LOAD_ERROR", message: "Impossible de charger l'image depuis: \(imagePath)", details: nil))
+          }
+          return
+        }
         
-        let fullPrompt = "\(instructions)\n\nDécris de manière positive une image située à: \(imagePath)"
+        guard let cgImage = image.cgImage else {
+          DispatchQueue.main.async {
+            result(FlutterError(code: "IMAGE_CONVERSION_ERROR", message: "Impossible de convertir l'image", details: nil))
+          }
+          return
+        }
+        
+        // Analyser l'image avec Vision Framework
+        let imageDescription = try await analyzeImageWithVision(cgImage: cgImage)
+        
+        // Utiliser le modèle de langage pour reformuler la description de manière positive
+        let session = LanguageModelSession()
+        let instructions = "Voici une description technique d'une image. Reformule-la en moins de 100 mots. Enleve les élements avec une faible probabilité. Rends la description chaleureuse et positive, en français."
+        
+        let fullPrompt = "\(instructions)\n\nDescription de l'image: \(imageDescription)"
         let response = try await session.respond(to: fullPrompt)
         
         DispatchQueue.main.async {
@@ -190,6 +208,100 @@ import FoundationModels
       } catch {
         DispatchQueue.main.async {
           result(FlutterError(code: "IMAGE_ANALYSIS_ERROR", message: "Erreur lors de l'analyse d'image: \(error.localizedDescription)", details: nil))
+        }
+      }
+    }
+  }
+  
+  // Fonction d'analyse d'image avec Vision Framework
+  private func analyzeImageWithVision(cgImage: CGImage) async throws -> String {
+    return try await withCheckedThrowingContinuation { continuation in
+      var descriptionParts: [String] = []
+      let dispatchGroup = DispatchGroup()
+      
+      // 1. Classification d'image (scènes, objets)
+      dispatchGroup.enter()
+      let classifyRequest = VNClassifyImageRequest { request, error in
+        defer { dispatchGroup.leave() }
+        
+        if let error = error {
+          print("Erreur classification: \(error)")
+          return
+        }
+        
+        guard let observations = request.results as? [VNClassificationObservation] else {
+          return
+        }
+        
+        // Prendre les 5 classifications les plus probables
+        let topClassifications = observations.prefix(5)
+          .filter { $0.confidence > 0.1 }
+          .map { "\($0.identifier) (confiance: \(Int($0.confidence * 100))%)" }
+        
+        if !topClassifications.isEmpty {
+          descriptionParts.append("Objets/Scènes détectés: \(topClassifications.joined(separator: ", "))")
+        }
+      }
+      
+      // 2. Reconnaissance de texte (OCR)
+      dispatchGroup.enter()
+      let textRequest = VNRecognizeTextRequest { request, error in
+        defer { dispatchGroup.leave() }
+        
+        if let error = error {
+          print("Erreur OCR: \(error)")
+          return
+        }
+        
+        guard let observations = request.results as? [VNRecognizedTextObservation] else {
+          return
+        }
+        
+        let recognizedTexts = observations.compactMap { observation in
+          observation.topCandidates(1).first?.string
+        }
+        
+        if !recognizedTexts.isEmpty {
+          descriptionParts.append("Texte visible: \(recognizedTexts.joined(separator: " "))")
+        }
+      }
+      textRequest.recognitionLevel = .accurate
+      
+      // 3. Détection de visages
+      dispatchGroup.enter()
+      let faceRequest = VNDetectFaceRectanglesRequest { request, error in
+        defer { dispatchGroup.leave() }
+        
+        if let error = error {
+          print("Erreur détection visages: \(error)")
+          return
+        }
+        
+        guard let observations = request.results as? [VNFaceObservation] else {
+          return
+        }
+        
+        if observations.count > 0 {
+          descriptionParts.append("\(observations.count) visage(s) détecté(s)")
+        }
+      }
+      
+      // Exécuter toutes les requêtes
+      let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+      
+      do {
+        try handler.perform([classifyRequest, textRequest, faceRequest])
+      } catch {
+        continuation.resume(throwing: error)
+        return
+      }
+      
+      // Attendre que toutes les analyses soient terminées
+      dispatchGroup.notify(queue: .main) {
+        if descriptionParts.isEmpty {
+          continuation.resume(returning: "Une image sans éléments identifiables clairement")
+        } else {
+          continuation.resume(returning: descriptionParts.joined(separator: ". "))
         }
       }
     }
