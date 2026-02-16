@@ -262,6 +262,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
           SnackBar(content: Text('Erreur lors de l\'accès à la $sourceText'), backgroundColor: Colors.red),
         );
       }
+      rethrow;
     }
   }
 

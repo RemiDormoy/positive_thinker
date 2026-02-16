@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Cette application a besoin d'accéder à votre caméra pour prendre des photos et les analyser de manière positive.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Cette application a besoin d'accéder à vos photos pour les analyser et vous aider à voir la vie du bon côté.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Cette application souhaite sauvegarder des photos dans votre bibliothèque.</string>
 </dict>
 </plist>
