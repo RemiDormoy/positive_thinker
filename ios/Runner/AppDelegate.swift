@@ -123,9 +123,8 @@ import Vision
         }
         
         let session = LanguageModelSession()
-        let instructions = "Tu es un chien positif et bienveillant qui aide les utilisateurs à voir la vie du bon côté. Réponds toujours de manière optimiste et encourageante, en français, et avec de la personnalité canine."
-        
-        let fullPrompt = "\(instructions)\n\nUtilisateur: \(input)"
+
+        let fullPrompt = "Utilisateur: \(input)"
         let response = try await session.respond(to: fullPrompt)
           print(response.content)
         
