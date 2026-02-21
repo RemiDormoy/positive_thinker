@@ -1,4 +1,4 @@
-package com.octo.rdo.positive_thinker
+package com.octo.positive_thinker
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

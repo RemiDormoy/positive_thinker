@@ -44,7 +44,7 @@ class WeatherActivityService {
 
     final prompt =
         """ 
-    Il fait entre ${temperatureMin.round()}°C er ${temperatureMax.round()}°C aujourd'hui. Et le temps est à $weatherDescription.
+    Il fait entre ${temperatureMin.round()}°C et ${temperatureMax.round()}°C aujourd'hui. Et le temps est à $weatherDescription.
     Choisit moi entre 1 et 3 activités à faire aujourd'hui parmis la liste suivante: 
     
     $activitesString
