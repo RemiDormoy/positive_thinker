@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:positive_thinker/pages/activate_nano_page.dart';
 import 'package:positive_thinker/pages/better_reading_page.dart';
 import 'package:positive_thinker/pages/coach_page.dart';
+import 'package:positive_thinker/pages/positive_activities_page.dart';
 import 'package:positive_thinker/pages/positive_news_page.dart';
 import 'package:positive_thinker/pages/weather_activity_page.dart';
 import 'package:positive_thinker/pages/writing_improvement_page.dart';
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
       home: const HomePage(),
       routes: {
         "/coach": (context) => SmartCoachAssistantPage(),
+        "/positive_activities": (context) => const PositiveActivitiesPage(),
         "/positive_news": (context) => const PositiveNewsPage(),
         "/better_reading": (context) => const BetterReadingPage(),
         "/activate_nano": (context) => const ActivateNanoPage(),
@@ -95,6 +97,18 @@ class HomePage extends StatelessWidget {
                   description: 'Votre accompagnateur personnel vers une vie plus positive',
                   onClick: () {
                     Navigator.of(context).pushNamed("/coach");
+                  },
+                ),
+
+                const SizedBox(height: 30),
+
+                // Section Positive Activities
+                _buildFeatureItem(
+                  icon: Icons.lightbulb_outline,
+                  title: 'Positive Activities',
+                  description: 'Prenez des actions pour améliorer votre humeur',
+                  onClick: () {
+                    Navigator.of(context).pushNamed("/positive_activities");
                   },
                 ),
 
