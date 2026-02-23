@@ -17,7 +17,7 @@ class SmartCoachAssistantPage extends StatefulWidget {
 }
 
 class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
-  final List<ChatMessage> _messages = [];
+  final List<PositiveChatMessage> _messages = [];
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isGenerating = false;
@@ -41,7 +41,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
   void _addWelcomeMessage() {
     setState(() {
       _messages.add(
-        ChatMessage(
+        PositiveChatMessage(
           text:
               "Salut ! Je suis Coach Gnocchi, ton assistant de vie pour t'aider à être heureux comme moi quand je cours après un lapin !",
           isUser: false,
@@ -122,7 +122,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
 
     // Ajouter le message utilisateur
     setState(() {
-      _messages.add(ChatMessage(text: text.trim(), isUser: true, timestamp: DateTime.now()));
+      _messages.add(PositiveChatMessage(text: text.trim(), isUser: true, timestamp: DateTime.now()));
       _isGenerating = true;
     });
 
@@ -131,7 +131,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
 
     // Ajouter un message de chargement pour l'IA
     setState(() {
-      _messages.add(ChatMessage(text: "", isUser: false, timestamp: DateTime.now(), isLoading: true));
+      _messages.add(PositiveChatMessage(text: "", isUser: false, timestamp: DateTime.now(), isLoading: true));
     });
 
     try {
@@ -140,7 +140,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
       // Remplacer le message de chargement par la réponse
       setState(() {
         _messages.removeLast();
-        _messages.add(ChatMessage(text: response, isUser: false, timestamp: DateTime.now()));
+        _messages.add(PositiveChatMessage(text: response, isUser: false, timestamp: DateTime.now()));
         _isGenerating = false;
       });
     } catch (e) {
@@ -148,7 +148,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
       setState(() {
         _messages.removeLast();
         _messages.add(
-          ChatMessage(
+          PositiveChatMessage(
             text: "Désolé, j'ai rencontré un problème. Peux-tu réessayer ?",
             isUser: false,
             timestamp: DateTime.now(),
@@ -271,13 +271,13 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
 
     // Ajouter le message utilisateur avec image
     setState(() {
-      _messages.add(ChatMessage(text: "", isUser: true, timestamp: DateTime.now(), image: imageFile));
+      _messages.add(PositiveChatMessage(text: "", isUser: true, timestamp: DateTime.now(), image: imageFile));
       _isGenerating = true;
     });
 
     // Ajouter un message de chargement pour l'IA
     setState(() {
-      _messages.add(ChatMessage(text: "...", isUser: false, timestamp: DateTime.now(), isLoading: true));
+      _messages.add(PositiveChatMessage(text: "...", isUser: false, timestamp: DateTime.now(), isLoading: true));
     });
 
     _scrollToBottom();
@@ -292,7 +292,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
       // Remplacer le message de chargement par la réponse
       setState(() {
         _messages.removeLast();
-        _messages.add(ChatMessage(text: result.trim(), isUser: false, timestamp: DateTime.now()));
+        _messages.add(PositiveChatMessage(text: result.trim(), isUser: false, timestamp: DateTime.now()));
         _isGenerating = false;
       });
     } catch (e) {
@@ -300,7 +300,7 @@ class _SmartCoachAssistantPageState extends State<SmartCoachAssistantPage> {
       setState(() {
         _messages.removeLast();
         _messages.add(
-          ChatMessage(
+          PositiveChatMessage(
             text: "Désolé, j'ai rencontré un problème pour analyser cette image. Peux-tu réessayer ?",
             isUser: false,
             timestamp: DateTime.now(),

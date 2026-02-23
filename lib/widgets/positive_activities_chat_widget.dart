@@ -1,34 +1,7 @@
 part of '../pages/positive_activities_page.dart';
 
-class _ChatMessagesListWidget extends StatelessWidget {
-  final List<ChatMessage> messages;
-  final ScrollController scrollController;
-
-  const _ChatMessagesListWidget({
-    required this.messages,
-    required this.scrollController,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (messages.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return ListView.builder(
-      controller: scrollController,
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      itemCount: messages.length,
-      itemBuilder: (context, index) {
-        final message = messages[index];
-        return _MessageWidget(message: message);
-      },
-    );
-  }
-}
-
 class _MessageWidget extends StatelessWidget {
-  final ChatMessage message;
+  final PositiveChatMessage message;
 
   const _MessageWidget({required this.message});
 
@@ -96,7 +69,7 @@ class _AssistantAvatarWidget extends StatelessWidget {
 }
 
 class _UserMessageWidget extends StatelessWidget {
-  final ChatMessage message;
+  final PositiveChatMessage message;
 
   const _UserMessageWidget({required this.message});
 
@@ -122,7 +95,7 @@ class _UserMessageWidget extends StatelessWidget {
 }
 
 class _AssistantMessageWidget extends StatelessWidget {
-  final ChatMessage message;
+  final PositiveChatMessage message;
 
   const _AssistantMessageWidget({required this.message});
 

@@ -1,9 +1,13 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:positive_thinker/gemini_api_key.dart';
 import 'package:positive_thinker/models/chat_message.dart';
+import 'package:genui/genui.dart';
+import 'package:genui_google_generative_ai/genui_google_generative_ai.dart';
+import 'package:json_schema_builder/json_schema_builder.dart';
 
 part '../widgets/positive_activities_chat_widget.dart';
+
+part 'genui_stuff.dart';
 
 class PositiveActivitiesPage extends StatefulWidget {
   const PositiveActivitiesPage({super.key});
@@ -12,16 +16,57 @@ class PositiveActivitiesPage extends StatefulWidget {
   State<PositiveActivitiesPage> createState() => _PositiveActivitiesPageState();
 }
 
+final catalog = CoreCatalogItems.asCatalog().copyWith([
+  _moodCardWidget,
+  _assistantMessageWidget,
+]);
+
 class _PositiveActivitiesPageState extends State<PositiveActivitiesPage> {
-  final List<ChatMessage> _messages = [];
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool _isGenerating = false;
+  late GenUiConversation conversation;
+  final _surfaceIds = <String>[];
+
+  void _onSurfaceAdded(SurfaceAdded update) {
+    setState(() {
+      if (_surfaceIds.contains(update.surfaceId)) return;
+      _surfaceIds.add(update.surfaceId);
+    });
+  }
+
+  // A callback invoked by GenUiConversation when a UI surface is removed.
+  void _onSurfaceDeleted(SurfaceRemoved update) {
+    setState(() {
+      _surfaceIds.remove(update.surfaceId);
+    });
+  }
+
+  final messageProcessor = A2uiMessageProcessor(catalogs: [catalog]);
+  final contentGenerator = GoogleGenerativeAiContentGenerator(
+    catalog: catalog,
+    systemInstruction: """
+    Tu es un chien coach de vie. Ton but est d'analyser mon humeur pour ensuite trouver des activités pour m'aider à aller mieux.
+    Je veux que tu analyse mon humeur en générant une MoodCard.
+    Pour les autres messages, utilise un AssistantMessageCard.  
+    """,
+    modelName: 'models/gemini-2.5-flash',
+    apiKey: GEMINI_API_KEY,
+  );
 
   @override
   void initState() {
     super.initState();
-    _addWelcomeMessage();
+    conversation = GenUiConversation(
+      contentGenerator: contentGenerator,
+      a2uiMessageProcessor: messageProcessor,
+      onSurfaceAdded: _onSurfaceAdded,
+      onSurfaceDeleted: _onSurfaceDeleted,
+      onError: (error) {
+        print('Error: ${error.stackTrace?.toString()}');
+        print('Error: ${error.error.toString()}');
+      },
+      onTextResponse: (reponse) => print("GenUI rewponse : $reponse"),
+    );
   }
 
   @override
@@ -31,25 +76,16 @@ class _PositiveActivitiesPageState extends State<PositiveActivitiesPage> {
     super.dispose();
   }
 
-  void _addWelcomeMessage() {
-    setState(() {
-      _messages.add(
-        ChatMessage(
-          text: "Raconte moi ce qui se passe, et on va trouver ensemble comment changer ça",
-          isUser: false,
-          timestamp: DateTime.now(),
-        ),
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "Positive Activities",
-          style: TextStyle(color: Color(0xFF8B4513), fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Color(0xFF8B4513),
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: const Color(0xFFF5E6D3),
         iconTheme: const IconThemeData(color: Color(0xFF8B4513)),
@@ -70,15 +106,30 @@ class _PositiveActivitiesPageState extends State<PositiveActivitiesPage> {
                   ],
                 ),
               ),
-              child: _ChatMessagesListWidget(
-                messages: _messages,
-                scrollController: _scrollController,
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                itemCount: _surfaceIds.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return _MessageWidget(
+                      message: PositiveChatMessage(
+                        text:
+                            "Raconte moi ce qui se passe, et on va trouver ensemble comment changer ça",
+                        isUser: false,
+                        timestamp: DateTime.now(),
+                      ),
+                    );
+                  }
+                  final id = _surfaceIds[index - 1];
+                  return GenUiSurface(host: conversation.host, surfaceId: id);
+                },
               ),
             ),
           ),
           _ChatInputWidget(
             controller: _textController,
-            isGenerating: _isGenerating,
+            isGenerating: false,
             onSendMessage: _handleSendMessage,
           ),
         ],
@@ -87,46 +138,11 @@ class _PositiveActivitiesPageState extends State<PositiveActivitiesPage> {
   }
 
   Future<void> _handleSendMessage(String text) async {
-    if (text.trim().isEmpty || _isGenerating) return;
+    if (text.trim().isEmpty) return;
 
     // Ajouter le message utilisateur
-    setState(() {
-      _messages.add(ChatMessage(
-        text: text.trim(),
-        isUser: true,
-        timestamp: DateTime.now(),
-      ));
-      _isGenerating = true;
-    });
-
-    _textController.clear();
-    _scrollToBottom();
-
-    // Ajouter un message de chargement pour l'IA
-    setState(() {
-      _messages.add(ChatMessage(
-        text: "",
-        isUser: false,
-        timestamp: DateTime.now(),
-        isLoading: true,
-      ));
-    });
-
-    // TODO: Implement service call here
-    // For now, just simulate a delay
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Remplacer le message de chargement par une réponse temporaire
-    setState(() {
-      _messages.removeLast();
-      _messages.add(ChatMessage(
-        text: "Je comprends. Laisse-moi réfléchir à des activités positives qui pourraient t'aider...",
-        isUser: false,
-        timestamp: DateTime.now(),
-      ));
-      _isGenerating = false;
-    });
-
+    print("Je lance un conversation.request");
+    conversation.sendRequest(UserMessage.text(text));
     _scrollToBottom();
   }
 
