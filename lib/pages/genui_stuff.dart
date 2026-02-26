@@ -118,6 +118,52 @@ final _activityCardWidget = CatalogItem(
     final data = context.data as Map<String, dynamic>;
     final List<dynamic> activites = data['activites'] ?? [];
 
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF5E6D3), Color(0xFFFFFFFF)],
+        ),
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(color: const Color(0xFF8B4513), width: 2.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8.0,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ActivityHeaderWidget(),
+          const SizedBox(height: 16.0),
+          ...activites.asMap().entries.map((entry) {
+            final index = entry.key;
+            final activity = entry.value;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (index > 0) const SizedBox(height: 12.0),
+                _SingleActivityWidget(
+                  type: activity['type'] ?? '',
+                  description: activity['description'] ?? '',
+                  explicationHumeur: activity['explication_humeur'] ?? '',
+                  index: index + 1,
+                ),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+    // Cette nuit j'ai fait un cauchemard ou j'ai perdu mon chien. Je n'arrive pas à me sortir ça de la tête.
     return _ActivityCardWidget(
       activites: activites.map((activity) {
         return {
@@ -591,40 +637,27 @@ class _SingleActivityWidget extends StatelessWidget {
           width: 1.5,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF81C784).withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: ClipOval(
-                  child: Image.asset(
-                    _getActivityImagePath(type),
-                    width: 40,
-                    height: 40,
-                    fit: BoxFit.cover,
-                  ),
-                ),
+          Expanded(
+            flex: 1,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12.0),
+              child: Image.asset(
+                _getActivityImagePath(type),
+                fit: BoxFit.fitHeight,
               ),
-              const SizedBox(width: 12.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      'Activité $index',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF8B4513),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
                     Text(
                       type,
                       style: const TextStyle(
@@ -635,13 +668,13 @@ class _SingleActivityWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 12.0),
+                _ActivityDescriptionWidget(description: description),
+                const SizedBox(height: 8.0),
+                _ActivityExplicationWidget(explication: explicationHumeur),
+              ],
+            ),
           ),
-          const SizedBox(height: 12.0),
-          _ActivityDescriptionWidget(description: description),
-          const SizedBox(height: 8.0),
-          _ActivityExplicationWidget(explication: explicationHumeur),
         ],
       ),
     );
@@ -664,11 +697,7 @@ class _ActivityDescriptionWidget extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.description,
-            color: Color(0xFF8B4513),
-            size: 18,
-          ),
+          const Icon(Icons.description, color: Color(0xFF8B4513), size: 18),
           const SizedBox(width: 8.0),
           Expanded(
             child: Text(
