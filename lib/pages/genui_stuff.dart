@@ -32,40 +32,7 @@ final _activityCard = S.object(
         properties: {
           'type': S.string(
             description: 'Le type de l\'activité',
-            enumValues: [
-              "faire une promenade rapide",
-              "danser",
-              "faire du yoga",
-              "aller nager",
-              "faire le ménage",
-              "pratiquer un sport de combat",
-              "suivre un cours de fitness en ligne",
-              "monter et descendre les escaliers",
-              "faire du vélo",
-              "faire du saut à la corde",
-              "méditer",
-              "faire une sieste",
-              "prendre un bain",
-              "bronzer au soleil",
-              "aller faire un massage",
-              "allumer de l'encens",
-              "écouter les bruits de la nature",
-              "boire une infusion",
-              "dessiner",
-              "écrire ses pensées dans un journal intime",
-              "jouer de la musique",
-              "cuisiner",
-              "jardiner",
-              "bricoler",
-              "regarder un film",
-              "lire un livre",
-              "jouer à un jeu de société",
-              "écouter de la musique",
-              "appeler un ami",
-              "caresser son animal de compagnie",
-              "aller boire une bière",
-              "ne rien faire du tout",
-            ],
+            enumValues: possibleActivities,
           ),
           'description': S.string(description: 'La description de l\'activité'),
           'explication_humeur': S.string(
@@ -80,6 +47,41 @@ final _activityCard = S.object(
   required: ['activites'],
 );
 
+final possibleActivities = [
+  "faire une promenade rapide",
+  "danser",
+  "faire du yoga",
+  "aller nager",
+  "faire le ménage",
+  "pratiquer un sport de combat",
+  //"suivre un cours de fitness en ligne",
+  //"monter et descendre les escaliers",
+  //"faire du vélo",
+  //"faire du saut à la corde",
+  //"méditer",
+  //"faire une sieste",
+  //"prendre un bain",
+  //"bronzer au soleil",
+  //"aller faire un massage",
+  //"allumer de l'encens",
+  //"écouter les bruits de la nature",
+  //"boire une infusion",
+  //"dessiner",
+  //"écrire ses pensées dans un journal intime",
+  //"jouer de la musique",
+  //"cuisiner",
+  //"jardiner",
+  //"bricoler",
+  "regarder un film",
+  "lire un livre",
+  "jouer à un jeu de société",
+  "écouter de la musique",
+  "appeler un ami",
+  "caresser son animal de compagnie",
+  "aller boire une bière",
+  "ne rien faire du tout",
+];
+
 final possibleMoods = [
   "JOYEUX",
   "IRRITABLE",
@@ -92,6 +94,7 @@ final possibleMoods = [
   "MOROSE",
   "PREOCCUPE",
 ];
+
 final _assistantMessageWidget = CatalogItem(
   name: 'AssistantMessageCard',
   dataSchema: _assistantMessage,
@@ -107,6 +110,26 @@ final _assistantMessageWidget = CatalogItem(
     );
   },
 );
+
+final _activityCardWidget = CatalogItem(
+  name: 'ActivityCard',
+  dataSchema: _activityCard,
+  widgetBuilder: (CatalogItemContext context) {
+    final data = context.data as Map<String, dynamic>;
+    final List<dynamic> activites = data['activites'] ?? [];
+
+    return _ActivityCardWidget(
+      activites: activites.map((activity) {
+        return {
+          'type': activity['type'] ?? '',
+          'description': activity['description'] ?? '',
+          'explication_humeur': activity['explication_humeur'] ?? '',
+        };
+      }).toList(),
+    );
+  },
+);
+
 final _moodCardWidget = CatalogItem(
   name: 'MoodCard',
   dataSchema: _moodCard,
@@ -359,6 +382,340 @@ class _ExplicationWidget extends StatelessWidget {
                 fontSize: 14,
                 color: Color(0xFF5D4037),
                 height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActivityCardWidget extends StatelessWidget {
+  final List<Map<String, dynamic>> activites;
+
+  const _ActivityCardWidget({required this.activites});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF5E6D3), Color(0xFFFFFFFF)],
+        ),
+        borderRadius: BorderRadius.circular(16.0),
+        border: Border.all(color: const Color(0xFF8B4513), width: 2.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8.0,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ActivityHeaderWidget(),
+          const SizedBox(height: 16.0),
+          ...activites.asMap().entries.map((entry) {
+            final index = entry.key;
+            final activity = entry.value;
+            return Column(
+              children: [
+                if (index > 0) const SizedBox(height: 12.0),
+                _SingleActivityWidget(
+                  type: activity['type'] ?? '',
+                  description: activity['description'] ?? '',
+                  explicationHumeur: activity['explication_humeur'] ?? '',
+                  index: index + 1,
+                ),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActivityHeaderWidget extends StatelessWidget {
+  const _ActivityHeaderWidget();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: const Color(0xFF81C784).withValues(alpha: 0.2),
+            shape: BoxShape.circle,
+            border: Border.all(color: const Color(0xFF81C784), width: 3.0),
+          ),
+          child: const Icon(
+            Icons.emoji_events,
+            color: Color(0xFF81C784),
+            size: 32,
+          ),
+        ),
+        const SizedBox(width: 16.0),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Activités suggérées',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF8B4513),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 4.0),
+              Text(
+                'Pour améliorer ton humeur',
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Color(0xFF81C784),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SingleActivityWidget extends StatelessWidget {
+  final String type;
+  final String description;
+  final String explicationHumeur;
+  final int index;
+
+  const _SingleActivityWidget({
+    required this.type,
+    required this.description,
+    required this.explicationHumeur,
+    required this.index,
+  });
+
+  String _getActivityImagePath(String activityType) {
+    switch (activityType) {
+      case "faire une promenade rapide":
+        return "assets/images_activites/promenade_rapide.png";
+      case "danser":
+        return "assets/images_activites/danse.png";
+      case "faire du yoga":
+        return "assets/images_activites/yoga.png";
+      case "aller nager":
+        return "assets/images_activites/nage_piscine.png";
+      case "faire le ménage":
+        return "assets/images_activites/menage.png";
+      case "pratiquer un sport de combat":
+        return "assets/images_activites/combat.png";
+      case "suivre un cours de fitness en ligne":
+        return "assets/images_activites/fitness.png";
+      case "monter et descendre les escaliers":
+        return "assets/images_activites/escaliers.png";
+      case "faire du vélo":
+        return "assets/images_activites/velo.png";
+      case "faire du saut à la corde":
+        return "assets/images_activites/corde.png";
+      case "méditer":
+        return "assets/images_activites/meditation.png";
+      case "faire une sieste":
+        return "assets/images_activites/sieste.png";
+      case "prendre un bain":
+        return "assets/images_activites/bain.png";
+      case "bronzer au soleil":
+        return "assets/images_activites/bronzer.png";
+      case "aller faire un massage":
+        return "assets/images_activites/massage.png";
+      case "allumer de l'encens":
+        return "assets/images_activites/encens.png";
+      case "écouter les bruits de la nature":
+        return "assets/images_activites/bruits_nature.png";
+      case "boire une infusion":
+        return "assets/images_activites/infusion.png";
+      case "dessiner":
+        return "assets/images_activites/dessin.png";
+      case "écrire ses pensées dans un journal intime":
+        return "assets/images_activites/journal_intime.png";
+      case "jouer de la musique":
+        return "assets/images_activites/musique.png";
+      case "cuisiner":
+        return "assets/images_activites/cuisiner.png";
+      case "jardiner":
+        return "assets/images_activites/jardiner.png";
+      case "bricoler":
+        return "assets/images_activites/bricoler.png";
+      case "regarder un film":
+        return "assets/images_activites/regarder_film.png";
+      case "lire un livre":
+        return "assets/images_activites/lire.png";
+      case "jouer à un jeu de société":
+        return "assets/images_activites/jeu_de_société.png";
+      case "écouter de la musique":
+        return "assets/images_activites/ecouter_musique.png";
+      case "appeler un ami":
+        return "assets/images_activites/appel_ami.png";
+      case "caresser son animal de compagnie":
+        return "assets/images_activites/caresser_animal.png";
+      case "aller boire une bière":
+        return "assets/images_activites/boire_une_biere.png";
+      case "ne rien faire du tout":
+        return "assets/images_activites/rien_faire.png";
+      default:
+        return "assets/images_activites/rien_faire.png";
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(
+          color: const Color(0xFF8B4513).withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF81C784).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    _getActivityImagePath(type),
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12.0),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Activité $index',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF8B4513),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      type,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF5D4037),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12.0),
+          _ActivityDescriptionWidget(description: description),
+          const SizedBox(height: 8.0),
+          _ActivityExplicationWidget(explication: explicationHumeur),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActivityDescriptionWidget extends StatelessWidget {
+  final String description;
+
+  const _ActivityDescriptionWidget({required this.description});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8B4A0).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.description,
+            color: Color(0xFF8B4513),
+            size: 18,
+          ),
+          const SizedBox(width: 8.0),
+          Expanded(
+            child: Text(
+              description,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF5D4037),
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActivityExplicationWidget extends StatelessWidget {
+  final String explication;
+
+  const _ActivityExplicationWidget({required this.explication});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFF81C784).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.lightbulb_outline,
+            color: Color(0xFF81C784),
+            size: 18,
+          ),
+          const SizedBox(width: 8.0),
+          Expanded(
+            child: Text(
+              explication,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF5D4037),
+                height: 1.3,
+                fontStyle: FontStyle.italic,
               ),
             ),
           ),

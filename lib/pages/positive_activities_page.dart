@@ -21,6 +21,7 @@ class PositiveActivitiesPage extends StatefulWidget {
 final catalog = CoreCatalogItems.asCatalog().copyWith([
   _moodCardWidget,
   _assistantMessageWidget,
+  _activityCardWidget,
 ]);
 
 class _PositiveActivitiesPageState extends State<PositiveActivitiesPage> {
