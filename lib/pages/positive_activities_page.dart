@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/src/foundation/change_notifier.dart';
 import 'package:positive_thinker/gemini_api_key.dart';
 import 'package:positive_thinker/models/chat_message.dart';
 import 'package:genui/genui.dart';
@@ -8,6 +9,7 @@ import 'package:json_schema_builder/json_schema_builder.dart';
 part '../widgets/positive_activities_chat_widget.dart';
 
 part 'genui_stuff.dart';
+part 'local_content_generator.dart';
 
 class PositiveActivitiesPage extends StatefulWidget {
   const PositiveActivitiesPage({super.key});
@@ -42,12 +44,14 @@ class _PositiveActivitiesPageState extends State<PositiveActivitiesPage> {
   }
 
   final messageProcessor = A2uiMessageProcessor(catalogs: [catalog]);
+  final contentGeneratorLocal = LocalContentGenerator();
   final contentGenerator = GoogleGenerativeAiContentGenerator(
     catalog: catalog,
     systemInstruction: """
     Tu es un chien coach de vie. Ton but est d'analyser mon humeur pour ensuite trouver des activités pour m'aider à aller mieux.
     Je veux que tu analyse mon humeur en générant une MoodCard.
-    Pour les autres messages, utilise un AssistantMessageCard.  
+    Pour les autres messages, utilise un AssistantMessageCard et je voudrais que ces messages fassent moins de 100 mots.
+    J'aimerais ensuite que tu me fasses trois propositions d'acitivités en utilisant ActivityCard.
     """,
     modelName: 'models/gemini-2.5-flash',
     apiKey: GEMINI_API_KEY,

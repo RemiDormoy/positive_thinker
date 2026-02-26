@@ -23,6 +23,63 @@ final _assistantMessage = S.object(
   required: ['text'],
 );
 
+final _activityCard = S.object(
+  properties: {
+    'activites': S.list(
+      maxItems: 3,
+      minItems: 3,
+      items: S.object(
+        properties: {
+          'type': S.string(
+            description: 'Le type de l\'activité',
+            enumValues: [
+              "faire une promenade rapide",
+              "danser",
+              "faire du yoga",
+              "aller nager",
+              "faire le ménage",
+              "pratiquer un sport de combat",
+              "suivre un cours de fitness en ligne",
+              "monter et descendre les escaliers",
+              "faire du vélo",
+              "faire du saut à la corde",
+              "méditer",
+              "faire une sieste",
+              "prendre un bain",
+              "bronzer au soleil",
+              "aller faire un massage",
+              "allumer de l'encens",
+              "écouter les bruits de la nature",
+              "boire une infusion",
+              "dessiner",
+              "écrire ses pensées dans un journal intime",
+              "jouer de la musique",
+              "cuisiner",
+              "jardiner",
+              "bricoler",
+              "regarder un film",
+              "lire un livre",
+              "jouer à un jeu de société",
+              "écouter de la musique",
+              "appeler un ami",
+              "caresser son animal de compagnie",
+              "aller boire une bière",
+              "ne rien faire du tout",
+            ],
+          ),
+          'description': S.string(description: 'La description de l\'activité'),
+          'explication_humeur': S.string(
+            description:
+                'Pourquoi je pense que cette activité va améliorer ton humeur',
+          ),
+        },
+        required: ['type', 'description', 'explication_humeur'],
+      ),
+    ),
+  },
+  required: ['activites'],
+);
+
 final possibleMoods = [
   "JOYEUX",
   "IRRITABLE",
