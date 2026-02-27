@@ -2,14 +2,14 @@ import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 
-class ChatMessage extends Equatable {
+class PositiveChatMessage extends Equatable {
   final String text;
   final bool isUser;
   final DateTime timestamp;
   final bool isLoading;
   final File? image;
 
-  const ChatMessage({
+  const PositiveChatMessage({
     required this.text,
     required this.isUser,
     required this.timestamp,

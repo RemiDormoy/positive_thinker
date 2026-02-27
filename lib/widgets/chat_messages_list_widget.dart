@@ -1,7 +1,7 @@
 part of '../pages/coach_page.dart';
 
 class _ChatMessagesListWidget extends StatelessWidget {
-  final List<ChatMessage> messages;
+  final List<PositiveChatMessage> messages;
   final ScrollController scrollController;
 
   const _ChatMessagesListWidget({required this.messages, required this.scrollController});
@@ -25,7 +25,7 @@ class _ChatMessagesListWidget extends StatelessWidget {
 }
 
 class _MessageWidget extends StatelessWidget {
-  final ChatMessage message;
+  final PositiveChatMessage message;
 
   const _MessageWidget({required this.message});
 
@@ -81,7 +81,7 @@ class _AssistantAvatarWidget extends StatelessWidget {
 }
 
 class _UserMessageWidget extends StatelessWidget {
-  final ChatMessage message;
+  final PositiveChatMessage message;
 
   const _UserMessageWidget({required this.message});
 
@@ -118,7 +118,7 @@ class _UserMessageWidget extends StatelessWidget {
 }
 
 class _AssistantMessageWidget extends StatelessWidget {
-  final ChatMessage message;
+  final PositiveChatMessage message;
 
   const _AssistantMessageWidget({required this.message});
 

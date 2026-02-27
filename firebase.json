@@ -1,16 +1,1 @@
-{
-  "hosting": {
-    "public": "build/web",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
-}
+{"hosting":{"public":"build/web","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]},"flutter":{"platforms":{"android":{"default":{"projectId":"positive-thinker-a76ae","appId":"1:894397665890:android:4953aa29554244077cf73b","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"positive-thinker-a76ae","appId":"1:894397665890:ios:fc8d7b156f34afc77cf73b","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"positive-thinker-a76ae","configurations":{"android":"1:894397665890:android:4953aa29554244077cf73b","ios":"1:894397665890:ios:fc8d7b156f34afc77cf73b","web":"1:894397665890:web:d5350678ef4a02427cf73b"}}}}}}

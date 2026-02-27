@@ -37,6 +37,12 @@ dependencies:
   http: ^1.1.0
   flutter_markdown: ^0.7.4+1
   url_launcher: ^6.3.1
+  genui_google_generative_ai: ^0.7.0
+  json_schema_builder: ^0.1.3
+  firebase_core: ^4.4.0
+  firebase_ai: ^3.8.0
+  genui: ^0.7.0
+  genui_firebase_ai: ^0.7.0
 
 dev_dependencies:
   flutter_test:
@@ -73,6 +79,7 @@ flutter:
   assets:
     - images/
     - assets/
+    - assets/images_activites/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
