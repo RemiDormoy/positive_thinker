@@ -625,6 +625,77 @@ class _SingleActivityWidget extends StatelessWidget {
     }
   }
 
+  String? _getMonetizationButtonLabel(String activityType) {
+    switch (activityType) {
+      case "faire une promenade rapide":
+        return null;
+      case "danser":
+        return "Réserver un cours de danse";
+      case "faire du yoga":
+        return "Réserver un cours de danse";
+      case "aller nager":
+        return "S'abonner à la piscine";
+      case "faire le ménage":
+        return null;
+      case "pratiquer un sport de combat":
+        return "Réserver un cours de boxe";
+      case "suivre un cours de fitness en ligne":
+        return "Réserver un cours";
+      case "monter et descendre les escaliers":
+        return null;
+      case "faire du vélo":
+        return null;
+      case "faire du saut à la corde":
+        return "Acheter une corde à sauter";
+      case "méditer":
+        return null;
+      case "faire une sieste":
+        return null;
+      case "prendre un bain":
+        return null;
+      case "bronzer au soleil":
+        return "Réserver des vacances au soleil";
+      case "aller faire un massage":
+        return "Réserver un massage";
+      case "allumer de l'encens":
+        return "Acheter de l'encens";
+      case "écouter les bruits de la nature":
+        return null;
+      case "boire une infusion":
+        return null;
+      case "dessiner":
+        return "Réserver un cours de dessin";
+      case "écrire ses pensées dans un journal intime":
+        return null;
+      case "jouer de la musique":
+        return null;
+      case "cuisiner":
+        return null;
+      case "jardiner":
+        return "S'équiper pour le jardinage";
+      case "bricoler":
+        return "S'équiper pour le bricolage";
+      case "regarder un film":
+        return "S'abonner à OCTO TV";
+      case "lire un livre":
+        return "Consulter les livres blancs d'OCTO";
+      case "jouer à un jeu de société":
+        return null;
+      case "écouter de la musique":
+        return "S'abonner à Spotify";
+      case "appeler un ami":
+        return null;
+      case "caresser son animal de compagnie":
+        return null;
+      case "aller boire une bière":
+        return "S'acheter des amis";
+      case "ne rien faire du tout":
+        return null;
+      default:
+        return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -650,6 +721,7 @@ class _SingleActivityWidget extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: 10),
           Expanded(
             flex: 3,
             child: Column(
@@ -659,7 +731,7 @@ class _SingleActivityWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      type,
+                      type.capitalize(),
                       style: const TextStyle(
                         fontSize: 16,
                         color: Color(0xFF5D4037),
@@ -672,6 +744,14 @@ class _SingleActivityWidget extends StatelessWidget {
                 _ActivityDescriptionWidget(description: description),
                 const SizedBox(height: 8.0),
                 _ActivityExplicationWidget(explication: explicationHumeur),
+                if (_getMonetizationButtonLabel(type) != null) ...[
+                  const SizedBox(height: 8.0),
+                  PositiveThinkerButton(
+                    onPressed: () {},
+                    loading: false,
+                    label: _getMonetizationButtonLabel(type)!,
+                  )
+                ],
               ],
             ),
           ),
@@ -749,6 +829,52 @@ class _ActivityExplicationWidget extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class PositiveThinkerButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final bool loading;
+  final String label;
+
+  const PositiveThinkerButton({required this.onPressed, required this.loading, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        gradient: onPressed != null ? const LinearGradient(colors: [Color(0xFFD2691E), Color(0xFFFF8C00)]) : null,
+        color: onPressed == null ? Colors.grey[400] : null,
+        boxShadow: onPressed != null
+            ? [BoxShadow(color: Colors.orange.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 6))]
+            : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(15),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                loading
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : Icon(Icons.auto_fix_high, color: Colors.white, size: 24),
+                SizedBox(width: 12),
+                Text(
+                  loading ? '...' : label,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
