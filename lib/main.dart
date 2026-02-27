@@ -7,8 +7,14 @@ import 'package:positive_thinker/pages/positive_activities_page.dart';
 import 'package:positive_thinker/pages/positive_news_page.dart';
 import 'package:positive_thinker/pages/weather_activity_page.dart';
 import 'package:positive_thinker/pages/writing_improvement_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 

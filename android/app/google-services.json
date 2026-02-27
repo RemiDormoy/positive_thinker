@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "894397665890",
+    "project_id": "positive-thinker-a76ae",
+    "storage_bucket": "positive-thinker-a76ae.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:894397665890:android:4953aa29554244077cf73b",
+        "android_client_info": {
+          "package_name": "com.octo.positive_thinker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbJvQ5EPAUD_DQP62_hhghcVE50WR5--Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
