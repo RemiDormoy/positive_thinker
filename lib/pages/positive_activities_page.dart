@@ -10,6 +10,7 @@ import 'package:json_schema_builder/json_schema_builder.dart';
 part '../widgets/positive_activities_chat_widget.dart';
 
 part 'genui_stuff.dart';
+
 part 'local_content_generator.dart';
 
 class PositiveActivitiesPage extends StatefulWidget {
@@ -29,6 +30,7 @@ class _PositiveActivitiesPageState extends State<PositiveActivitiesPage> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late GenUiConversation conversation;
+  String? userMessage;
   final _surfaceIds = <String>[];
 
   void _onSurfaceAdded(SurfaceAdded update) {
@@ -47,6 +49,7 @@ class _PositiveActivitiesPageState extends State<PositiveActivitiesPage> {
 
   final messageProcessor = A2uiMessageProcessor(catalogs: [catalog]);
   final contentGeneratorLocal = LocalContentGenerator();
+
   /*final contentGenerator = FirebaseAiContentGenerator(
     catalog: catalog,
     systemInstruction: """
@@ -124,7 +127,7 @@ class _PositiveActivitiesPageState extends State<PositiveActivitiesPage> {
               child: ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                itemCount: _surfaceIds.length + 1,
+                itemCount: _surfaceIds.length + 3,
                 itemBuilder: (context, index) {
                   if (index == 0) {
                     return _MessageWidget(
@@ -136,17 +139,45 @@ class _PositiveActivitiesPageState extends State<PositiveActivitiesPage> {
                       ),
                     );
                   }
-                  final id = _surfaceIds[index - 1];
+                  if (index == 1) {
+                    if (userMessage != null) {
+                      return _MessageWidget(
+                        message: PositiveChatMessage(
+                          text: userMessage!,
+                          isUser: true,
+                          timestamp: DateTime.now(),
+                        ),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  }
+                  if (index == 2) {
+                    if (userMessage != null && _surfaceIds.isEmpty) {
+                      return _MessageWidget(
+                        message: PositiveChatMessage(
+                          text: "...",
+                          isUser: false,
+                          timestamp: DateTime.now(),
+                          isLoading: true,
+                        ),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  }
+                  final id = _surfaceIds[index - 3];
                   return GenUiSurface(host: conversation.host, surfaceId: id);
                 },
               ),
             ),
           ),
-          _ChatInputWidget(
-            controller: _textController,
-            isGenerating: false,
-            onSendMessage: _handleSendMessage,
-          ),
+          if (userMessage == null)
+            _ChatInputWidget(
+              controller: _textController,
+              isGenerating: false,
+              onSendMessage: _handleSendMessage,
+            ),
         ],
       ),
     );
@@ -157,6 +188,9 @@ class _PositiveActivitiesPageState extends State<PositiveActivitiesPage> {
 
     // Ajouter le message utilisateur
     print("Je lance un conversation.request");
+    setState(() {
+      userMessage = text.trim();
+    });
     conversation.sendRequest(UserMessage.text(text));
     _scrollToBottom();
   }
